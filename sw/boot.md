@@ -1,14 +1,18 @@
 # BootROM 设计
 
-BootROM 拥有独立 32KB BRAM（`0x0000_2000`），紧邻 EEPROM，仅 FSI 可访问、运行时只读。
+BootROM 拥有独立 32KB BRAM（`0x0000_0000`），仅 FSI 可访问、运行时只读。EEPROM 挂载在 I2C0 上，非内存映射。
 系统上电后 FSI 从 BootROM 启动，自校验通过后加载 FSI 固件。
 
 ## 地址布局
 
 ```
-EEPROM          0x0000_0000 ~ 0x0000_1FFF (8KB, I2C)
-BootROM         0x0000_2000 ~ 0x0000_9FFF (32KB, 独立 BRAM, FSI 只读)
-SYSTEM SRAM     0x0000_A000 ~ 0x000B_1FFF (672KB, 核间共享)
+BootROM         0x0000_0000 ~ 0x0000_7FFF (32KB, 独立 BRAM, FSI 只读)
+Reserved        0x0000_8000 ~ 0x0000_FFFF (32KB, BootROM 扩展预留)
+SYSTEM SRAM     0x0001_0000 ~ 0x000B_7FFF (672KB, 核间共享)
+NPU TCM         0x000B_8000 ~ 0x000C_1FFF (40KB, Coral ITCM 8KB + DTCM 32KB)
+Reserved        0x000C_2000 ~ 0x000C_FFFF (56KB)
+FSI 私有 SRAM   0x000D_0000 ~ 0x000E_FFFF (128KB, 固件加载目标)
+Reserved        0x000F_0000 ~ 0x000F_FFFF (64KB)
 ```
 
 ## 启动流程
@@ -18,9 +22,9 @@ SYSTEM SRAM     0x0000_A000 ~ 0x000B_1FFF (672KB, 核间共享)
 | 0 | FPGA 位流固化 BootROM，DDR 初始化，仅 FSI 退出复位 |
 | 1 | 初始化 I2C、UART、SPI；自校验：SHA-256(BootROM) vs EEPROM 哈希，不匹配 → 停机 |
 | 2 | lifecycle=Debug/Test → waiting 倒计时（默认 2s），`q`/`Q` → 终端；Release → 跳过 |
-| 3 | 读 KEY[1:0] + EEPROM 确定启动源；加载 FSI 固件至 `0x000C_0000`（加密则 AES 解密）；SHA-256 校验通过则跳转（`skip_verify=1` 跳过）；校验失败 → Debug/Test 回退终端，Release 打印错误后停机 |
+| 3 | 读 KEY[1:0] + EEPROM 确定启动源；加载 FSI 固件至 `0x000D_0000`（加密则 AES 解密）；SHA-256 校验通过则跳转（`skip_verify=1` 跳过）；校验失败 → Debug/Test 回退终端，Release 打印错误后停机 |
 | 4 | FSI 固件接管：lifecycle=Debug/Test → waiting 倒计时（默认 1s），`q`/`Q` → 终端；读 KEY + EEPROM 确定 AP/NPU 介质，逐镜像加载： |
-|   | **NPU** → `0x000E_0000`：SHA-256 → RSA 验签（`skip_verify=1` 跳过）；失败 → Debug/Test 回退终端，Release 打印错误 |
+|   | **NPU** → `0x000B_8000`：SHA-256 → RSA 验签（`skip_verify=1` 跳过）；失败 → Debug/Test 回退终端，Release 打印错误 |
 |   | **AP** → DDR：RTOS 裸机 或 OpenSBI → U-Boot → Linux，SHA-256 → RSA 验签（`skip_verify=1` 跳过）；失败 → Debug/Test 回退终端，Release 打印错误 |
 |   | 全部通过 → 释放各核复位 |
 | 5 | FSI 守护：运行时安全监控、心跳、WDT |
