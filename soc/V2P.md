@@ -43,7 +43,7 @@
 | `0x1004_1000` – `0x1004_1FFF` | 4KB | FSI | UART |
 | `0x1004_2000` – `0x1004_2FFF` | 4KB | FSI | Timer |
 | `0x1004_3000` – `0x1007_FFFF` | ~240KB | — | Reserved |
-| `0x1008_0000` – `0x100B_FFFF` | 256KB | FSI | PLIC |
+| `0x1008_0000` – `0x100B_FFFF` | 256KB | FSI | PLIC（core-v-plic，M模式）|
 | `0x100C_0000` – `0x100C_FFFF` | 64KB | FSI | CLINT |
 | `0x100D_0000` – `0x100D_0FFF` | 4KB | FSI | PMU，电源管理与复位控制器，详见PMU |
 | `0x100D_1000` – `0x1FFF_FFFF` | ~255MB | — | Reserved |
@@ -52,7 +52,7 @@
 
 | 地址范围 | 容量 | 归属 | 说明 |
 |----------|------|------|------|
-| `0x3000_0000` – `0x3003_FFFF` | 256KB | AP | PLIC，外部中断控制器 |
+| `0x3000_0000` – `0x3003_FFFF` | 256KB | AP | PLIC（core-v-plic，M/S模式），外部中断控制器 |
 | `0x3004_0000` – `0x3004_FFFF` | 64KB | AP | CLINT，本地中断控制器 |
 | `0x3005_0000` – `0x3005_0FFF` | 4KB | AP | WDT (Core0) |
 | `0x3005_1000` – `0x3005_1FFF` | 4KB | AP | WDT (Core1) |
@@ -94,9 +94,15 @@ AP CLINT 本地中断详见 [`ap/ap.md`](ap/ap.md)。
 
 ### AP 外部中断 (PLIC)
 
+AP 使用 **core-v-plic**（OpenHW Group 开源 RISC-V PLIC），支持 M/S 双模式中断转发。
+- **M 模式**：各核 MEIP 接收 OpenSBI（SEE）中断，用于异常转发与核间中断管理。
+- **S 模式**：各核 SEIP 接收 OS（Linux）外部中断，经 OpenSBI 委托后直通 Linux。
+
 AP PLIC 外部中断详见 [`ap/ap.md`](ap/ap.md)。
 
 ### FSI 本地中断
+
+FSI 使用 **core-v-plic**（仅 M 模式），接收来自 QSPI0、I2C0、AP/NPU WDT 超时等外部中断。
 
 FSI CLINT 本地中断与 PLIC 外部中断详见 [`fsi/fsi.md`](fsi/fsi.md)。
 
@@ -188,6 +194,8 @@ AP 外设清单详见 [`ap/ap.md`](ap/ap.md)。
 |----|------|------|
 | AXI 互联 | OpenPULP `axi` | 多主多从总线 |
 | DDR3 控制器 | Xilinx MIG | DDR3 接口 |
+| PLIC（AP） | OpenHW core-v-plic | `0x3000_0000`，支持 M/S 模式，4 个目标上下文（每核 M+SEIP）|
+| PLIC（FSI） | OpenHW core-v-plic | `0x1008_0000`，仅 M 模式，单目标上下文 |
 | **IPC_CTRL** | **自研** | **`0x000C_2000`，核间通信控制器，含 Doorbell + IPI 状态 + 队列控制寄存器**，详见 [`ip/ipc.md`](ip/ipc.md) |
 | **SPINLOCK** | **自研** | **`0x000C_3000`，硬件同步锁控制器，含 32 路 test-and-set 锁寄存器**，详见 [`ip/ipc.md`](ip/ipc.md) |
 
