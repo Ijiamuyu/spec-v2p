@@ -18,22 +18,22 @@ AP 子系统是 V2P SoC 的高性能应用处理域，包含 4 核 VexRiscv-SMP 
 
 ## 内存布局
 
-### AP 私密外设（4KB 步进）
+### AP 私密外设
 
 | 地址范围 | 容量 | 说明 |
 |----------|------|------|
-| `0x4000_0000` – `0x4000_FFFF` | 64KB | PLIC，外部中断控制器 |
-| `0x4001_0000` – `0x4001_FFFF` | 64KB | CLINT，本地中断控制器 |
-| `0x4002_0000` – `0x4002_0FFF` | 4KB | WDT (Core0) |
-| `0x4002_1000` – `0x4002_1FFF` | 4KB | WDT (Core1) |
-| `0x4002_2000` – `0x4002_2FFF` | 4KB | WDT (Core2) |
-| `0x4002_3000` – `0x4002_3FFF` | 4KB | WDT (Core3) |
-| `0x4002_4000` – `0x4002_4FFF` | 4KB | Timer (Core0) |
-| `0x4002_5000` – `0x4002_5FFF` | 4KB | Timer (Core1) |
-| `0x4002_6000` – `0x4002_6FFF` | 4KB | Timer (Core2) |
-| `0x4002_7000` – `0x4002_7FFF` | 4KB | Timer (Core3) |
-| `0x4002_8000` – `0x4002_8FFF` | 4KB | UART（AP Dedicated），主 Log 输出口；FSI 可跨域读取以监控 AP 状态 |
-| `0x4002_9000` – `0x4002_9FFF` | 4KB | Debug Module (AP)，JTAG 调试接口，始终使能 |
+| `0x3000_0000` – `0x3003_FFFF` | 256KB | PLIC，外部中断控制器 |
+| `0x3004_0000` – `0x3004_FFFF` | 64KB | CLINT，本地中断控制器 |
+| `0x3005_0000` – `0x3005_0FFF` | 4KB | WDT (Core0) |
+| `0x3005_1000` – `0x3005_1FFF` | 4KB | WDT (Core1) |
+| `0x3005_2000` – `0x3005_2FFF` | 4KB | WDT (Core2) |
+| `0x3005_3000` – `0x3005_3FFF` | 4KB | WDT (Core3) |
+| `0x3005_4000` – `0x3005_4FFF` | 4KB | Timer (Core0) |
+| `0x3005_5000` – `0x3005_5FFF` | 4KB | Timer (Core1) |
+| `0x3005_6000` – `0x3005_6FFF` | 4KB | Timer (Core2) |
+| `0x3005_7000` – `0x3005_7FFF` | 4KB | Timer (Core3) |
+| `0x3005_8000` – `0x3005_8FFF` | 4KB | UART（AP Dedicated），主 Log 输出口；FSI 可跨域读取以监控 AP 状态 |
+| `0x3005_9000` – `0x3005_9FFF` | 4KB | Debug Module (AP)，JTAG 调试接口，始终使能 |
 
 ### AP 可访问的共享资源
 
@@ -42,28 +42,28 @@ AP 子系统是 V2P SoC 的高性能应用处理域，包含 4 核 VexRiscv-SMP 
 | `0x0001_0000` – `0x000B_7FFF` | 672KB | SYSTEM SRAM，核间共享数据区 |
 | `0x000C_2000` – `0x000C_2FFF` | 4KB | IPC_CTRL，核间通信控制器（Doorbell + IPI）|
 | `0x000C_3000` – `0x000C_3FFF` | 4KB | SPINLOCK，硬件同步锁（32 路 test-and-set）|
-| `0x3000_0000` – `0x3000_FFFF` | 64KB | QSPI0 |
-| `0x3001_0000` – `0x3001_FFFF` | 64KB | QSPI1 |
-| `0x3002_0000` – `0x3002_FFFF` | 64KB | I2C0（挂载 EEPROM 24LC02，存 MAC 地址、板级版本、校准数据）|
-| `0x3003_0000` – `0x3003_FFFF` | 64KB | I2C1 |
-| `0x3004_0000` – `0x3004_FFFF` | 64KB | DMA（仅 AP 使用，FSI 只读寄存器）|
-| `0x3005_0000` – `0x3005_FFFF` | 64KB | UART（扩展）|
-| `0x3006_0000` – `0x3006_FFFF` | 64KB | GPIO（无中断，仅 Poll）|
-| `0x3007_0000` – `0x3007_FFFF` | 64KB | Ethernet MAC（内部 DMA）|
-| `0x3008_0000` – `0x3008_FFFF` | 64KB | SD/MMC（内部 DMA）|
-| `0x3009_0000` – `0x3009_FFFF` | 64KB | RTC |
-| `0x300A_0000` – `0x300A_FFFF` | 64KB | PWM，6 通道 16-bit 脉宽调制器 |
+| `0x0010_0000` – `0x0010_FFFF` | 64KB | QSPI0（LSIO）|
+| `0x0011_0000` – `0x0011_FFFF` | 64KB | QSPI1（LSIO）|
+| `0x0012_0000` – `0x0012_FFFF` | 64KB | I2C0（LSIO，挂载 EEPROM 24LC02）|
+| `0x0013_0000` – `0x0013_FFFF` | 64KB | I2C1（LSIO）|
+| `0x0014_0000` – `0x0014_FFFF` | 64KB | DMA（LSIO，仅 AP 使用，FSI 只读寄存器）|
+| `0x0015_0000` – `0x0015_FFFF` | 64KB | UART（扩展）（LSIO）|
+| `0x0016_0000` – `0x0016_FFFF` | 64KB | GPIO（LSIO，无中断）|
+| `0x0017_0000` – `0x0017_FFFF` | 64KB | Ethernet MAC（LSIO，内部 DMA）|
+| `0x0018_0000` – `0x0018_FFFF` | 64KB | SD/MMC（LSIO，内部 DMA）|
+| `0x0019_0000` – `0x0019_FFFF` | 64KB | RTC（LSIO）|
+| `0x001A_0000` – `0x001A_FFFF` | 64KB | PWM（LSIO，6 通道 16-bit 脉宽调制器）|
 | `0xC000_0000` – `0xFFFF_FFFF` | 1GB | DDR3 主存 |
 
 > **AXI 隔离**：AP 专有域硬件硬编码隔离，不可访问 FSI 及 NPU 私有外设空间。
 >
-> **LSIO**：AP 通过 PLIC 获取全部 LSIO 中断（QSPI0/1、I2C0/1、DMA、Ethernet、SD/MMC、RTC、Timer、WDT）。QSPI1/I2C1 在 FSI 域仅 Poll，但在 AP 域均可中断。
+> **LSIO**（`0x0010_0000`–`0x001A_FFFF`）：公共外设区域，AP 通过 PLIC 获取全部 LSIO 中断（QSPI0/1、I2C0/1、DMA、Ethernet、SD/MMC、RTC）。QSPI1/I2C1 在 FSI 域仅 Poll，但在 AP 域均可中断。
 
 ## 中断布局
 
 ### AP 本地中断 (CLINT)
 
-CLINT（`0x4001_0000`，OpenPULP）为每核提供 1 路软件中断和 1 路定时器中断（mtime），共 8 路本地中断。
+CLINT（`0x3004_0000`，OpenPULP）为每核提供 1 路软件中断和 1 路定时器中断（mtime），共 8 路本地中断。
 
 | 中断号 | 源 | 说明 |
 |--------|-----|------|
@@ -80,7 +80,7 @@ CLINT（`0x4001_0000`，OpenPULP）为每核提供 1 路软件中断和 1 路定
 
 ### AP 外部中断 (PLIC)
 
-PLIC（`0x4000_0000`，OpenPULP）将 SoC 内所有外设中断集中路由至 AP 四核，支持优先级配置与中断屏蔽。
+PLIC（`0x3000_0000`，OpenPULP）将 SoC 内所有外设中断集中路由至 AP 四核，支持优先级配置与中断屏蔽。
 
 | 中断号 | 源 | 说明 |
 |--------|-----|------|
@@ -127,12 +127,12 @@ AP 四核各有独立 WDT（OpenCores `watch_dog`），支持两阶段超时机�
 
 ## 定时器
 
-AP 四核各有独立高精度 Timer（OpenCores `timer`，`0x4002_4000`–`0x4002_7FFF`），通过 PLIC #16–#19 上报中断。与 CLINT mtime 的关系：
+AP 四核各有独立高精度 Timer（OpenCores `timer`，`0x3005_4000`–`0x3005_7FFF`），通过 PLIC #16–#19 上报中断。与 CLINT mtime 的关系：
 
 | 定时器 | 地址 | 中断路径 | 用途 |
 |--------|------|----------|------|
-| CLINT mtime | `0x4001_0000` 内部 | 本地中断 #4–#7 | OS 时基（RISC-V 标准）|
-| Core Timer ×4 | `0x4002_4000`–`0x4002_7FFF` | PLIC #16–#19 | 高精度计时、额外定时中断 |
+| CLINT mtime | `0x3004_0000` 内部 | 本地中断 #4–#7 | OS 时基（RISC-V 标准）|
+| Core Timer ×4 | `0x3005_4000`–`0x3005_7FFF` | PLIC #16–#19 | 高精度计时、额外定时中断 |
 
 ## 调试 (Debug)
 
@@ -147,7 +147,7 @@ AP 调试**始终使能**，不受 PMU 控制。
 
 ## UART（AP Dedicated）
 
-AP 主 Log 输出口（OpenCores `uart16550`，`0x4002_8000`），PLIC #1。
+AP 主 Log 输出口（OpenCores `uart16550`，`0x3005_8000`），PLIC #1。
 
 - AP 系统主控制台，用于内核启动日志、应用程序输出
 - FSI 可通过 AXI 跨域读取 UART 寄存器以监控 AP 状态（日志轮询）
@@ -156,34 +156,34 @@ AP 主 Log 输出口（OpenCores `uart16550`，`0x4002_8000`），PLIC #1。
 
 | IP | 来源 | 地址 | 说明 |
 |----|------|------|------|
-| PLIC | OpenPULP | `0x4000_0000` | 平台级中断控制器 |
-| CLINT | OpenPULP | `0x4001_0000` | 核级本地中断控制器 |
-| WDT (Core0) | OpenCores `watch_dog` | `0x4002_0000` | 两阶段看门狗 |
-| WDT (Core1) | OpenCores `watch_dog` | `0x4002_1000` | 两阶段看门狗 |
-| WDT (Core2) | OpenCores `watch_dog` | `0x4002_2000` | 两阶段看门狗 |
-| WDT (Core3) | OpenCores `watch_dog` | `0x4002_3000` | 两阶段看门狗 |
-| Timer (Core0) | OpenCores `timer` | `0x4002_4000` | 高精度定时器 |
-| Timer (Core1) | OpenCores `timer` | `0x4002_5000` | 高精度定时器 |
-| Timer (Core2) | OpenCores `timer` | `0x4002_6000` | 高精度定时器 |
-| Timer (Core3) | OpenCores `timer` | `0x4002_7000` | 高精度定时器 |
-| UART (AP Dedicated) | OpenCores `uart16550` | `0x4002_8000` | 主 Log 输出口 |
-| Debug Module (AP) | VexRiscv-SMP 内置 | `0x4002_9000` | JTAG 调试接口，始终使能 |
+| PLIC | OpenPULP | `0x3000_0000` | 平台级中断控制器，256KB |
+| CLINT | OpenPULP | `0x3004_0000` | 核级本地中断控制器 |
+| WDT (Core0) | OpenCores `watch_dog` | `0x3005_0000` | 两阶段看门狗 |
+| WDT (Core1) | OpenCores `watch_dog` | `0x3005_1000` | 两阶段看门狗 |
+| WDT (Core2) | OpenCores `watch_dog` | `0x3005_2000` | 两阶段看门狗 |
+| WDT (Core3) | OpenCores `watch_dog` | `0x3005_3000` | 两阶段看门狗 |
+| Timer (Core0) | OpenCores `timer` | `0x3005_4000` | 高精度定时器 |
+| Timer (Core1) | OpenCores `timer` | `0x3005_5000` | 高精度定时器 |
+| Timer (Core2) | OpenCores `timer` | `0x3005_6000` | 高精度定时器 |
+| Timer (Core3) | OpenCores `timer` | `0x3005_7000` | 高精度定时器 |
+| UART (AP Dedicated) | OpenCores `uart16550` | `0x3005_8000` | 主 Log 输出口 |
+| Debug Module (AP) | VexRiscv-SMP 内置 | `0x3005_9000` | JTAG 调试接口，始终使能 |
 
 ### AP 可访问的公共外设（LSIO）
 
 | IP | 来源 | 地址 | 中断 (PLIC#) | 说明 |
 |----|------|------|-------------|------|
-| QSPI0 | OpenPULP `spi` | `0x3000_0000` | #3 | SPI Flash |
-| QSPI1 | OpenPULP `spi` | `0x3001_0000` | #4 | SPI 外设 |
-| I2C0 | OpenCores `i2c_master_top` | `0x3002_0000` | #5 | EEPROM 等 |
-| I2C1 | OpenCores `i2c_master_top` | `0x3003_0000` | #6 | 扩展 I2C |
-| DMA | OpenCores `wb_dma` | `0x3004_0000` | #7 | 通用 DMA |
-| UART (扩展) | OpenCores `uart16550` | `0x3005_0000` | #2 | 扩展串口 |
-| GPIO | OpenCores `gpio` | `0x3006_0000` | — | 无中断，仅 Poll |
-| Ethernet MAC | OpenCores `ethmac` | `0x3007_0000` | #9 | 内部 DMA |
-| SD/MMC | OpenCores `sd_controller` | `0x3008_0000` | #10 | 内部 DMA |
-| RTC | OpenCores `rtc` | `0x3009_0000` | #15 | 实时时钟 |
-| PWM | OpenCores `pwm` | `0x300A_0000` | — | 6 通道，无中断 |
+| QSPI0 | OpenPULP `spi` | `0x0010_0000` | #3 | SPI Flash；AP/FSI 读写，AP/FSI 中断 |
+| QSPI1 | OpenPULP `spi` | `0x0011_0000` | #4 | SPI 外设；AP/FSI 读写，AP 中断，FSI 仅 Poll |
+| I2C0 | OpenCores `i2c_master_top` | `0x0012_0000` | #5 | EEPROM 等；AP/FSI 读写，AP/FSI 中断 |
+| I2C1 | OpenCores `i2c_master_top` | `0x0013_0000` | #6 | 扩展 I2C；AP/FSI 读写，AP 中断，FSI 仅 Poll |
+| DMA | OpenCores `wb_dma` | `0x0014_0000` | #7 | 通用 DMA；AP 读写，FSI 只读 |
+| UART (扩展) | OpenCores `uart16550` | `0x0015_0000` | #2 | 扩展串口；AP/FSI 读写，AP 中断 |
+| GPIO | OpenCores `gpio` | `0x0016_0000` | — | AP/FSI 读写；无中断 |
+| Ethernet MAC | OpenCores `ethmac` | `0x0017_0000` | #9 | 内部 DMA；AP/FSI 读写，AP 中断 |
+| SD/MMC | OpenCores `sd_controller` | `0x0018_0000` | #10 | 内部 DMA；AP/FSI 读写，AP 中断 |
+| RTC | OpenCores `rtc` | `0x0019_0000` | #15 | 实时时钟；AP/FSI 读写，AP 中断 |
+| PWM | OpenCores `pwm` | `0x001A_0000` | — | AP/FSI 读写；无中断，6 通道 |
 
 ## 复位与启动
 

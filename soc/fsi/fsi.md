@@ -15,23 +15,23 @@ FSI 是 V2P SoC 的安全核子系统，包含 1 个 VexRiscv RV32 处理器及�
 
 ## 内存布局
 
-### FSI 私密外设（64KB 步进）
+### FSI 私密外设
 
 | 地址范围 | 容量 | 说明 |
 |----------|------|------|
 | `0x0000_0000` – `0x0000_0FFF` | 4KB | eFuse OTP，位流固化，只读不可写，详见 §eFuse OTP |
 | `0x0000_1000` – `0x0000_7FFF` | 28KB | BootROM 代码区，独立 BRAM，仅 FSI 可读 |
 | `0x000D_0000` – `0x000E_FFFF` | 128KB | FSI 私有 SRAM，固件加载目标 |
-| `0x2000_0000` – `0x2000_FFFF` | 64KB | AES-256 |
-| `0x2001_0000` – `0x2001_FFFF` | 64KB | SHA-256 |
-| `0x2002_0000` – `0x2002_FFFF` | 64KB | RSA-2048 |
-| `0x2003_0000` – `0x2003_FFFF` | 64KB | TRNG |
-| `0x2004_0000` – `0x2004_FFFF` | 64KB | WDT |
-| `0x2005_0000` – `0x2005_FFFF` | 64KB | UART |
-| `0x2006_0000` – `0x2006_FFFF` | 64KB | Timer |
-| `0x2007_0000` – `0x2007_FFFF` | 64KB | PLIC |
-| `0x2008_0000` – `0x2008_FFFF` | 64KB | CLINT |
-| `0x2009_0000` – `0x2009_FFFF` | 64KB | PMU，电源管理与复位控制器 |
+| `0x1000_0000` – `0x1000_FFFF` | 64KB | AES-256 |
+| `0x1001_0000` – `0x1001_FFFF` | 64KB | SHA-256 |
+| `0x1002_0000` – `0x1002_FFFF` | 64KB | RSA-2048 |
+| `0x1003_0000` – `0x1003_FFFF` | 64KB | TRNG |
+| `0x1004_0000` – `0x1004_0FFF` | 4KB | WDT |
+| `0x1004_1000` – `0x1004_1FFF` | 4KB | UART |
+| `0x1004_2000` – `0x1004_2FFF` | 4KB | Timer |
+| `0x1008_0000` – `0x100B_FFFF` | 256KB | PLIC |
+| `0x100C_0000` – `0x100C_FFFF` | 64KB | CLINT |
+| `0x100D_0000` – `0x100D_0FFF` | 4KB | PMU，电源管理与复位控制器 |
 
 ### FSI 可访问的共享资源
 
@@ -40,24 +40,30 @@ FSI 是 V2P SoC 的安全核子系统，包含 1 个 VexRiscv RV32 处理器及�
 | `0x0001_0000` – `0x000B_7FFF` | 672KB | SYSTEM SRAM，核间共享数据区 |
 | `0x000C_2000` – `0x000C_2FFF` | 4KB | IPC_CTRL，核间通信控制器（Doorbell + IPI）|
 | `0x000C_3000` – `0x000C_3FFF` | 4KB | SPINLOCK，硬件同步锁（32 路 test-and-set）|
-| `0x3000_0000` – `0x3000_FFFF` | 64KB | QSPI0（中断支持）|
-| `0x3001_0000` – `0x3001_FFFF` | 64KB | QSPI1（仅 Poll）|
-| `0x3002_0000` – `0x3002_FFFF` | 64KB | I2C0（中断支持，挂载 EEPROM 24LC02）|
-| `0x3003_0000` – `0x3003_FFFF` | 64KB | I2C1（仅 Poll）|
-| `0x3004_0000` – `0x3004_FFFF` | 64KB | DMA（仅只读寄存器）|
-| `0x4002_8000` – `0x4002_8FFF` | 4KB | AP UART（跨域读取，监控 AP 状态）|
+| `0x3005_8000` – `0x3005_8FFF` | 4KB | AP UART（跨域读取，监控 AP 状态）|
+| `0x0010_0000` – `0x0010_FFFF` | 64KB | QSPI0（中断支持）|
+| `0x0011_0000` – `0x0011_FFFF` | 64KB | QSPI1（仅 Poll）|
+| `0x0012_0000` – `0x0012_FFFF` | 64KB | I2C0（中断支持，挂载 EEPROM 24LC02）|
+| `0x0013_0000` – `0x0013_FFFF` | 64KB | I2C1（仅 Poll）|
+| `0x0014_0000` – `0x0014_FFFF` | 64KB | DMA（仅只读寄存器）|
+| `0x0015_0000` – `0x0015_FFFF` | 64KB | UART（扩展，AP/FSI 读写；AP 中断使能）|
+| `0x0016_0000` – `0x0016_FFFF` | 64KB | GPIO（AP/FSI 读写；无中断）|
+| `0x0017_0000` – `0x0017_FFFF` | 64KB | Ethernet MAC（AP/FSI 读写；内部 DMA，AP 中断使能）|
+| `0x0018_0000` – `0x0018_FFFF` | 64KB | SD/MMC（AP/FSI 读写；内部 DMA，AP 中断使能）|
+| `0x0019_0000` – `0x0019_FFFF` | 64KB | RTC（AP/FSI 读写；AP 中断使能）|
+| `0x001A_0000` – `0x001A_FFFF` | 64KB | PWM（AP/FSI 读写；无中断，6 通道）|
 | `0xC000_0000` – `0xFFFF_FFFF` | 1GB | DDR3 主存 |
 
 > **AXI 隔离**：FSI 作为安全核具有最高权限，可跨域读取 AP UART（日志监控）。FSI 不可发起 DMA 传输（DMA 寄存器只读）。
 >
-> **LSIO 访问策略**：FSI 本地中断仅侦听 QSPI0 和 I2C0，QSPI1/I2C1 仅 Poll。详见 [`../V2P.md`](../V2P.md) 内存布局中的 LSIO 说明。
+> **LSIO 访问策略**（`0x0010_0000`–`0x001A_FFFF`）：FSI 本地中断仅侦听 QSPI0 和 I2C0，QSPI1/I2C1 仅 Poll。详见 [`../V2P.md`](../V2P.md) 内存布局中的 LSIO 说明。
 
 ## 中断布局
 
 FSI 采用 CLINT + PLIC 双中断控制器架构：
 
-- **CLINT**（`0x2008_0000`）：提供 1 路本地软件中断（MSIP）和 1 路本地定时器中断（mtime）
-- **PLIC**（`0x2007_0000`）：将外部设备中断集中路由至 FSI
+- **CLINT**（`0x100C_0000`）：提供 1 路本地软件中断（MSIP）和 1 路本地定时器中断（mtime）
+- **PLIC**（`0x1008_0000`）：将外部设备中断集中路由至 FSI
 
 ### CLINT 本地中断
 
@@ -88,7 +94,7 @@ FSI 采用 CLINT + PLIC 双中断控制器架构：
 
 ## 看门狗 (WDT)
 
-FSI WDT（OpenCores `watch_dog`，`0x2004_0000`）超时直接触发 SoC 全局复位，无需软件干预，是系统的最后防线。
+FSI WDT（OpenCores `watch_dog`，`0x1004_0000`）超时直接触发 SoC 全局复位，无需软件干预，是系统的最后防线。
 
 | 项目 | 说明 |
 |------|------|
@@ -124,7 +130,7 @@ FSI 使用 VexRiscv 内置 RISC-V Debug Spec v0.13 Plugin（halt/step/resume、�
 
 ## PMU（电源管理与复位控制器）
 
-`0x2009_0000`，仅 FSI 可写。FSI 通过 PMU 统一管理 SoC 复位分发、时钟门控及调试访问控制。
+`0x100D_0000`，仅 FSI 可写。FSI 通过 PMU 统一管理 SoC 复位分发、时钟门控及调试访问控制。
 
 | 功能 | 说明 |
 |------|------|
@@ -137,16 +143,16 @@ FSI 使用 VexRiscv 内置 RISC-V Debug Spec v0.13 Plugin（halt/step/resume、�
 
 | IP | 来源 | 地址 | 说明 |
 |----|------|------|------|
-| AES-256 | OpenCores `aes_core` | `0x2000_0000` | MMIO 轮询，无中断 |
-| SHA-256 | OpenCores `sha256` | `0x2001_0000` | MMIO 轮询，无中断 |
-| RSA-2048 | OpenCores `basicrsa` | `0x2002_0000` | MMIO 轮询，无中断 |
-| TRNG | OpenTitan `entropy_src` | `0x2003_0000` | MMIO 轮询，无中断 |
-| WDT | OpenCores `watch_dog` | `0x2004_0000` | SoC 全局复位最后防线 |
-| UART | OpenCores `uart16550` | `0x2005_0000` | FSI 控制台 |
-| Timer (FSI) | OpenCores `timer` | `0x2006_0000` | 高精度计时，PLIC #1 |
-| PLIC (FSI) | OpenPULP | `0x2007_0000` | 平台级中断控制器 |
-| CLINT (FSI) | OpenPULP | `0x2008_0000` | 核级本地中断控制器 |
-| PMU | 自研 | `0x2009_0000` | 电源管理与复位控制器，仅 FSI 可写 |
+| AES-256 | OpenCores `aes_core` | `0x1000_0000` | MMIO 轮询，无中断 |
+| SHA-256 | OpenCores `sha256` | `0x1001_0000` | MMIO 轮询，无中断 |
+| RSA-2048 | OpenCores `basicrsa` | `0x1002_0000` | MMIO 轮询，无中断 |
+| TRNG | OpenTitan `entropy_src` | `0x1003_0000` | MMIO 轮询，无中断 |
+| WDT | OpenCores `watch_dog` | `0x1004_0000` | SoC 全局复位最后防线 |
+| UART | OpenCores `uart16550` | `0x1004_1000` | FSI 控制台 |
+| Timer (FSI) | OpenCores `timer` | `0x1004_2000` | 高精度计时，PLIC #1 |
+| PLIC (FSI) | OpenPULP | `0x1008_0000` | 平台级中断控制器，256KB |
+| CLINT (FSI) | OpenPULP | `0x100C_0000` | 核级本地中断控制器 |
+| PMU | 自研 | `0x100D_0000` | 电源管理与复位控制器，仅 FSI 可写 |
 
 ## 复位与启动
 
