@@ -94,7 +94,7 @@ FSI 采用 CLINT + PLIC 双中断控制器架构：
 
 ## 看门狗 (WDT)
 
-FSI WDT（OpenCores `watch_dog`，`0x1004_0000`）超时直接触发 SoC 全局复位，无需软件干预，是系统的最后防线。
+FSI WDT（SiFive sifive-blocks `wdt`，OpenCores `watch_dog` 同源，`0x1004_0000`）超时直接触发 SoC 全局复位，无需软件干预，是系统的最后防线。
 
 | 项目 | 说明 |
 |------|------|
@@ -147,10 +147,10 @@ FSI 使用 VexRiscv 内置 RISC-V Debug Spec v0.13 Plugin（halt/step/resume、�
 | SHA-256 | OpenCores `sha256` | `0x1001_0000` | MMIO 轮询，无中断 |
 | RSA-2048 | OpenCores `basicrsa` | `0x1002_0000` | MMIO 轮询，无中断 |
 | TRNG | OpenTitan `entropy_src` | `0x1003_0000` | MMIO 轮询，无中断 |
-| WDT | OpenCores `watch_dog` | `0x1004_0000` | SoC 全局复位最后防线 |
-| UART | OpenCores `uart16550` | `0x1004_1000` | FSI 控制台 |
-| Timer (FSI) | OpenCores `timer` | `0x1004_2000` | 高精度计时，PLIC #1 |
-| PLIC (FSI) | OpenPULP | `0x1008_0000` | 平台级中断控制器，256KB |
+| WDT | SiFive sifive-blocks `wdt` | `0x1004_0000` | SoC 全局复位最后防线 |
+| UART | SiFive sifive-blocks `uart` | `0x1004_1000` | FSI 控制台 |
+| Timer (FSI) | OpenCores `timer`（保留） | `0x1004_2000` | 高精度计时，PLIC #1 |
+| PLIC (FSI) | OpenHW core-v-plic | `0x1008_0000` | 平台级中断控制器，256KB |
 | CLINT (FSI) | OpenPULP | `0x100C_0000` | 核级本地中断控制器 |
 | PMU | 自研 | `0x100D_0000` | 电源管理与复位控制器，仅 FSI 可写 |
 

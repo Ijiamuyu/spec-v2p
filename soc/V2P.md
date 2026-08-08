@@ -146,7 +146,7 @@ AP 和 FSI 均使用 VexRiscv 内置 RISC-V Debug Spec v0.13 Plugin（halt/step/
 
 ## PWM（脉宽调制器）
 
-`0x001A_0000`，6 通道 16-bit，AP/FSI 均可配置。OpenCores `pwm` + AXI-Lite 包裹，每通道独立使能/极性/占空比，无中断。典型用途：LED、背光、蜂鸣器、电机。
+`0x001A_0000`，6 通道 16-bit，AP/FSI 均可配置。SiFive sifive-blocks `pwm` + AXI4-Lite 包裹，每通道独立使能/极性/占空比，无中断。典型用途：LED、背光、蜂鸣器、电机。
 
 ## eFuse OTP
 
@@ -176,17 +176,17 @@ AP 外设清单详见 [`ap/ap.md`](ap/ap.md)。
 
 | IP | 来源 | 地址 | 说明 |
 |----|------|------|------|
-| QSPI0 | OpenPULP `spi`（QSPI 模式） | `0x0010_0000` | AP/FSI 读写；AP 中断使能，FSI 中断使能 |
-| QSPI1 | OpenPULP `spi`（QSPI 模式） | `0x0011_0000` | AP/FSI 读写；AP 中断使能，FSI 仅 Poll |
-| I2C0 | OpenCores `i2c_master_top` | `0x0012_0000` | AP/FSI 读写；AP 中断使能，FSI 中断使能；挂载 EEPROM 24LC02 |
-| I2C1 | OpenCores `i2c_master_top` | `0x0013_0000` | AP/FSI 读写；AP 中断使能，FSI 仅 Poll |
-| DMA | OpenCores `wb_dma` | `0x0014_0000` | AP 读写，FSI 只读；FSI 不得发起传输 |
-| UART (扩展) | OpenCores `uart16550` | `0x0015_0000` | AP/FSI 读写；AP 中断使能 |
-| GPIO | OpenCores `gpio` | `0x0016_0000` | AP/FSI 读写；无中断 |
-| Ethernet MAC | OpenCores `ethmac` | `0x0017_0000` | AP/FSI 读写；内部 DMA，AP 中断使能 |
-| SD/MMC | OpenCores `sd_controller` | `0x0018_0000` | AP/FSI 读写；内部 DMA，AP 中断使能 |
-| RTC | OpenCores `rtc` | `0x0019_0000` | AP/FSI 读写；AP 中断使能 |
-| PWM | OpenCores `pwm` | `0x001A_0000` | AP/FSI 读写；无中断，6 通道脉宽调制器，16-bit 精度 |
+| QSPI0 | SiFive sifive-blocks `spi`（QSPI 模式） | `0x0010_0000` | AP/FSI 读写；AP 中断使能，FSI 中断使能 |
+| QSPI1 | SiFive sifive-blocks `spi`（QSPI 模式） | `0x0011_0000` | AP/FSI 读写；AP 中断使能，FSI 仅 Poll |
+| I2C0 | SiFive sifive-blocks `i2c` | `0x0012_0000` | AP/FSI 读写；AP 中断使能，FSI 中断使能；挂载 EEPROM 24LC02 |
+| I2C1 | SiFive sifive-blocks `i2c` | `0x0013_0000` | AP/FSI 读写；AP 中断使能，FSI 仅 Poll |
+| DMA | SiFive sifive-blocks `dma` | `0x0014_0000` | AP 读写，FSI 只读；FSI 不得发起传输 |
+| UART (扩展) | SiFive sifive-blocks `uart` | `0x0015_0000` | AP/FSI 读写；AP 中断使能 |
+| GPIO | SiFive sifive-blocks `gpio` | `0x0016_0000` | AP/FSI 读写；无中断 |
+| Ethernet MAC | OpenCores `ethmac`（保留，QEMU `opencores_eth` 模型现成） | `0x0017_0000` | AP/FSI 读写；内部 DMA，AP 中断使能 |
+| SD/MMC | 标准 SDHCI | `0x0018_0000` | AP/FSI 读写；内部 DMA，AP 中断使能 |
+| RTC | SiFive sifive-blocks `mockaon` RTC | `0x0019_0000` | AP/FSI 读写；AP 中断使能 |
+| PWM | SiFive sifive-blocks `pwm` | `0x001A_0000` | AP/FSI 读写；无中断，6 通道脉宽调制器，16-bit 精度 |
 
 ### SoC 基础设施
 

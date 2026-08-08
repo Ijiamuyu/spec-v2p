@@ -80,7 +80,7 @@ CLINT（`0x3004_0000`，OpenPULP）为每核提供 1 路软件中断和 1 路定
 
 ### AP 外部中断 (PLIC)
 
-PLIC（`0x3000_0000`，OpenPULP）将 SoC 内所有外设中断集中路由至 AP 四核，支持优先级配置与中断屏蔽。
+PLIC（`0x3000_0000`，OpenHW core-v-plic）将 SoC 内所有外设中断集中路由至 AP 四核，支持优先级配置与中断屏蔽。
 
 | 中断号 | 源 | 说明 |
 |--------|-----|------|
@@ -116,7 +116,7 @@ PLIC（`0x3000_0000`，OpenPULP）将 SoC 内所有外设中断集中路由至 A
 
 ## 看门狗 (WDT)
 
-AP 四核各有独立 WDT（OpenCores `watch_dog`），支持两阶段超时机制：
+AP 四核各有独立 WDT（SiFive sifive-blocks `wdt`，OpenCores `watch_dog` 同源），支持两阶段超时机制：
 
 | 阶段 | 超时事件 | 动作 |
 |------|----------|------|
@@ -147,7 +147,7 @@ AP 调试**始终使能**，不受 PMU 控制。
 
 ## UART（AP Dedicated）
 
-AP 主 Log 输出口（OpenCores `uart16550`，`0x3005_8000`），PLIC #1。
+AP 主 Log 输出口（SiFive sifive-blocks `uart`，`0x3005_8000`），PLIC #1。
 
 - AP 系统主控制台，用于内核启动日志、应用程序输出
 - FSI 可通过 AXI 跨域读取 UART 寄存器以监控 AP 状态（日志轮询）
@@ -156,34 +156,34 @@ AP 主 Log 输出口（OpenCores `uart16550`，`0x3005_8000`），PLIC #1。
 
 | IP | 来源 | 地址 | 说明 |
 |----|------|------|------|
-| PLIC | OpenPULP | `0x3000_0000` | 平台级中断控制器，256KB |
+| PLIC | OpenHW core-v-plic | `0x3000_0000` | 平台级中断控制器，256KB |
 | CLINT | OpenPULP | `0x3004_0000` | 核级本地中断控制器 |
-| WDT (Core0) | OpenCores `watch_dog` | `0x3005_0000` | 两阶段看门狗 |
-| WDT (Core1) | OpenCores `watch_dog` | `0x3005_1000` | 两阶段看门狗 |
-| WDT (Core2) | OpenCores `watch_dog` | `0x3005_2000` | 两阶段看门狗 |
-| WDT (Core3) | OpenCores `watch_dog` | `0x3005_3000` | 两阶段看门狗 |
+| WDT (Core0) | SiFive sifive-blocks `wdt` | `0x3005_0000` | 两阶段看门狗 |
+| WDT (Core1) | SiFive sifive-blocks `wdt` | `0x3005_1000` | 两阶段看门狗 |
+| WDT (Core2) | SiFive sifive-blocks `wdt` | `0x3005_2000` | 两阶段看门狗 |
+| WDT (Core3) | SiFive sifive-blocks `wdt` | `0x3005_3000` | 两阶段看门狗 |
 | Timer (Core0) | OpenCores `timer` | `0x3005_4000` | 高精度定时器 |
 | Timer (Core1) | OpenCores `timer` | `0x3005_5000` | 高精度定时器 |
 | Timer (Core2) | OpenCores `timer` | `0x3005_6000` | 高精度定时器 |
 | Timer (Core3) | OpenCores `timer` | `0x3005_7000` | 高精度定时器 |
-| UART (AP Dedicated) | OpenCores `uart16550` | `0x3005_8000` | 主 Log 输出口 |
+| UART (AP Dedicated) | SiFive sifive-blocks `uart` | `0x3005_8000` | 主 Log 输出口 |
 | Debug Module (AP) | VexRiscv-SMP 内置 | `0x3005_9000` | JTAG 调试接口，始终使能 |
 
 ### AP 可访问的公共外设（LSIO）
 
 | IP | 来源 | 地址 | 中断 (PLIC#) | 说明 |
 |----|------|------|-------------|------|
-| QSPI0 | OpenPULP `spi` | `0x0010_0000` | #3 | SPI Flash；AP/FSI 读写，AP/FSI 中断 |
-| QSPI1 | OpenPULP `spi` | `0x0011_0000` | #4 | SPI 外设；AP/FSI 读写，AP 中断，FSI 仅 Poll |
-| I2C0 | OpenCores `i2c_master_top` | `0x0012_0000` | #5 | EEPROM 等；AP/FSI 读写，AP/FSI 中断 |
-| I2C1 | OpenCores `i2c_master_top` | `0x0013_0000` | #6 | 扩展 I2C；AP/FSI 读写，AP 中断，FSI 仅 Poll |
-| DMA | OpenCores `wb_dma` | `0x0014_0000` | #7 | 通用 DMA；AP 读写，FSI 只读 |
-| UART (扩展) | OpenCores `uart16550` | `0x0015_0000` | #2 | 扩展串口；AP/FSI 读写，AP 中断 |
-| GPIO | OpenCores `gpio` | `0x0016_0000` | — | AP/FSI 读写；无中断 |
-| Ethernet MAC | OpenCores `ethmac` | `0x0017_0000` | #9 | 内部 DMA；AP/FSI 读写，AP 中断 |
-| SD/MMC | OpenCores `sd_controller` | `0x0018_0000` | #10 | 内部 DMA；AP/FSI 读写，AP 中断 |
-| RTC | OpenCores `rtc` | `0x0019_0000` | #15 | 实时时钟；AP/FSI 读写，AP 中断 |
-| PWM | OpenCores `pwm` | `0x001A_0000` | — | AP/FSI 读写；无中断，6 通道 |
+| QSPI0 | SiFive sifive-blocks `spi` | `0x0010_0000` | #3 | SPI Flash；AP/FSI 读写，AP/FSI 中断 |
+| QSPI1 | SiFive sifive-blocks `spi` | `0x0011_0000` | #4 | SPI 外设；AP/FSI 读写，AP 中断，FSI 仅 Poll |
+| I2C0 | SiFive sifive-blocks `i2c` | `0x0012_0000` | #5 | EEPROM 等；AP/FSI 读写，AP/FSI 中断 |
+| I2C1 | SiFive sifive-blocks `i2c` | `0x0013_0000` | #6 | 扩展 I2C；AP/FSI 读写，AP 中断，FSI 仅 Poll |
+| DMA | SiFive sifive-blocks `dma` | `0x0014_0000` | #7 | 通用 DMA；AP 读写，FSI 只读 |
+| UART (扩展) | SiFive sifive-blocks `uart` | `0x0015_0000` | #2 | 扩展串口；AP/FSI 读写，AP 中断 |
+| GPIO | SiFive sifive-blocks `gpio` | `0x0016_0000` | — | AP/FSI 读写；无中断 |
+| Ethernet MAC | OpenCores `ethmac`（保留，QEMU `opencores_eth` 模型现成） | `0x0017_0000` | #9 | 内部 DMA；AP/FSI 读写，AP 中断 |
+| SD/MMC | 标准 SDHCI | `0x0018_0000` | #10 | 内部 DMA；AP/FSI 读写，AP 中断 |
+| RTC | SiFive sifive-blocks `mockaon` RTC | `0x0019_0000` | #15 | 实时时钟；AP/FSI 读写，AP 中断 |
+| PWM | SiFive sifive-blocks `pwm` | `0x001A_0000` | — | AP/FSI 读写；无中断，6 通道 |
 
 ## 复位与启动
 

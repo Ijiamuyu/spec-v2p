@@ -4,7 +4,8 @@
 
 | 版本 | 日期 | 说明 |
 |------|------|------|
-| **v0.1** | 2026-07-26 | AP 最小系统：4 核 sifive-u54 + CLINT + PLIC + UART + SYSTEM SRAM + DDR |
+| **v0.2** | 2026-08-08 | 地址修正 + 外设扩展规划：PLIC/CLINT/UART 修正为 `0x3000_0000` 系列；规划 WDT×4、Timer×4、LSIO 全外设（sifive-blocks 替换） |
+| v0.1 | 2026-07-26 | AP 最小系统：4 核 sifive-u54 + CLINT + PLIC + UART + SYSTEM SRAM + DDR（旧地址 `0x4000_0000`，已废弃） |
 
 ## 系统架构
 
@@ -25,22 +26,51 @@
 │     │        │          │          │          │          │
 │  ┌──┴──┐ ┌──┴──┐  ┌───┴───┐  ┌──┴───┐  ┌───┴──────┐   │
 │  │CLINT│ │PLIC │  │ UART  │  │System│  │   DDR    │   │
-│  │     │ │     │  │16550  │  │ SRAM │  │  (1GB)   │   │
-│  │0x400│ │0x400│  │0x4002 │  │0x0001│  │0xC000    │   │
-│  │_1000│ │_0000│  │_8000  │  │_0000 │  │_0000     │   │
+│  │     │ │     │  │sifive │  │ SRAM │  │  (1GB)   │   │
+│  │0x300│ │0x300│  │0x3005 │  │0x0001│  │0xC000    │   │
+│  │4_0000│ │0_0000│  │_8000  │  │_0000 │  │_0000     │   │
 │  └─────┘ └─────┘  └───────┘  └──────┘  └──────────┘   │
 └──────────────────────────────────────────────────────────┘
 ```
 
 ## 内存映射
 
+### 当前已实现
+
 | 地址 | 大小 | 组件 |
 |------|------|------|
 | `0x0001_0000` | 672KB | SYSTEM SRAM（核间共享） |
-| `0x4000_0000` | 64KB | PLIC |
-| `0x4001_0000` | 64KB | CLINT |
-| `0x4002_8000` | 4KB | UART (16550) |
+| `0x3000_0000` | 256KB | PLIC |
+| `0x3004_0000` | 64KB | CLINT |
+| `0x3005_8000` | 4KB | UART（当前 16550，规划替换 sifive uart） |
 | `0xC000_0000` | 1GB | DDR3（复位向量） |
+
+### 外设扩展规划（待实施，对应 IP 替换方案）
+
+| 地址 | 大小 | 组件 | PLIC# | QEMU 模型 |
+|------|------|------|:---:|-----------|
+| `0x3005_0000` | 4KB | WDT Core0 | #11 | `opencores-wdt`（自研） |
+| `0x3005_1000` | 4KB | WDT Core1 | #12 | 同上 |
+| `0x3005_2000` | 4KB | WDT Core2 | #13 | 同上 |
+| `0x3005_3000` | 4KB | WDT Core3 | #14 | 同上 |
+| `0x3005_4000` | 4KB | Timer Core0 | #16 | `opencores-timer`（自研） |
+| `0x3005_5000` | 4KB | Timer Core1 | #17 | 同上 |
+| `0x3005_6000` | 4KB | Timer Core2 | #18 | 同上 |
+| `0x3005_7000` | 4KB | Timer Core3 | #19 | 同上 |
+| `0x0010_0000` | 64KB | QSPI0 | #3 | `sifive_spi` + `m25p80(n25q256a)` |
+| `0x0011_0000` | 64KB | QSPI1 | #4 | `sifive_spi` |
+| `0x0012_0000` | 64KB | I2C0 | #5 | `ocores-i2c`（自研）+ `at24c(24LC02)` |
+| `0x0013_0000` | 64KB | I2C1 | #6 | `ocores-i2c`（自研） |
+| `0x0014_0000` | 64KB | DMA | #7 | `sifive_pdma` |
+| `0x0015_0000` | 64KB | UART 扩展 | #2 | `sifive_uart` |
+| `0x0016_0000` | 64KB | GPIO | — | `sifive_gpio` |
+| `0x0017_0000` | 64KB | Ethernet MAC | #9 | `opencores_eth` |
+| `0x0018_0000` | 64KB | SD/MMC | #10 | `cadence_sdhci` + SD 卡 |
+| `0x0019_0000` | 64KB | RTC | #15 | `goldfish_rtc` 或 自研 |
+| `0x001A_0000` | 64KB | PWM | — | `sifive_pwm` |
+
+> 地址/中断编号与 `spec/soc/V2P.md`、`spec/soc/ap/ap.md` 完全一致。未列出区域保持 unimp 占位。
+> PLIC 目标上下文规划：`"MS,MS,MS,MS"`（每核 M+S，匹配 core-v-plic 双模式）。
 
 ## 编译
 
@@ -85,7 +115,7 @@ out/qemu/qemu-system-riscv64 -M v2p-ap -m 1G \
 
 ```bash
 out/qemu/qemu-system-riscv64 -M help | grep v2p
-# 输出: v2p-ap   RISC-V V2P AP (Application Processor) minimal system
+# 输出: v2p-ap   RISC-V V2P AP (Application Processor) machine
 ```
 
 ### GDB 调试
@@ -142,3 +172,8 @@ V2P AP 为 4 核 SMP，GDB 连接后每个 hart 为一个线程：
 | `qemu/hw/riscv/v2p_ap.c` | 机器实现 |
 | `qemu/hw/riscv/Kconfig` | 构建配置 |
 | `qemu/hw/riscv/meson.build` | 编译规则 |
+| `qemu/hw/timer/opencores_timer.c` | OpenCores Timer（自研） |
+| `qemu/hw/watchdog/opencores_wdt.c` | OpenCores WDT（自研） |
+| `qemu/hw/i2c/ocores_i2c.c` | I2C 控制器（自研，compatible `sifive,fu540-c000-i2c`） |
+
+> 复用主线模型：`hw/ssi/sifive_spi.c`、`hw/char/sifive_uart.c`、`hw/gpio/sifive_gpio.c`、`hw/timer/sifive_pwm.c`、`hw/dma/sifive_pdma.c`、`hw/sd/cadence_sdhci.c`、`hw/net/opencores_eth.c`、`hw/nvram/eeprom_at24c.c`、`hw/block/m25p80.c`。
