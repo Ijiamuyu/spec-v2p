@@ -45,13 +45,14 @@ FSI 是 V2P SoC 的安全核子系统，包含 1 个 VexRiscv RV32 处理器及�
 | `0x0011_0000` – `0x0011_FFFF` | 64KB | QSPI1（仅 Poll）|
 | `0x0012_0000` – `0x0012_FFFF` | 64KB | I2C0（中断支持，挂载 EEPROM 24LC02）|
 | `0x0013_0000` – `0x0013_FFFF` | 64KB | I2C1（仅 Poll）|
-| `0x0014_0000` – `0x0014_FFFF` | 64KB | DMA（仅只读寄存器）|
+| `0x0014_0000` – `0x0014_FFFF` | 64KB | Reserved（DMA 已移至 `0x0020_0000`）|
 | `0x0015_0000` – `0x0015_FFFF` | 64KB | UART（扩展，AP/FSI 读写；AP 中断使能）|
 | `0x0016_0000` – `0x0016_FFFF` | 64KB | GPIO（AP/FSI 读写；无中断）|
 | `0x0017_0000` – `0x0017_FFFF` | 64KB | Ethernet MAC（AP/FSI 读写；内部 DMA，AP 中断使能）|
 | `0x0018_0000` – `0x0018_FFFF` | 64KB | SD/MMC（AP/FSI 读写；内部 DMA，AP 中断使能）|
 | `0x0019_0000` – `0x0019_FFFF` | 64KB | RTC（AP/FSI 读写；AP 中断使能）|
 | `0x001A_0000` – `0x001A_FFFF` | 64KB | PWM（AP/FSI 读写；无中断，6 通道）|
+| `0x0020_0000` – `0x002F_FFFF` | 1MB | DMA（仅只读寄存器，1MB 对齐）|
 | `0xC000_0000` – `0xFFFF_FFFF` | 1GB | DDR3 主存 |
 
 > **AXI 隔离**：FSI 作为安全核具有最高权限，可跨域读取 AP UART（日志监控）。FSI 不可发起 DMA 传输（DMA 寄存器只读）。

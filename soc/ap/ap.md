@@ -46,13 +46,14 @@ AP 子系统是 V2P SoC 的高性能应用处理域，包含 4 核 VexRiscv-SMP 
 | `0x0011_0000` – `0x0011_FFFF` | 64KB | QSPI1（LSIO）|
 | `0x0012_0000` – `0x0012_FFFF` | 64KB | I2C0（LSIO，挂载 EEPROM 24LC02）|
 | `0x0013_0000` – `0x0013_FFFF` | 64KB | I2C1（LSIO）|
-| `0x0014_0000` – `0x0014_FFFF` | 64KB | DMA（LSIO，仅 AP 使用，FSI 只读寄存器）|
+| `0x0014_0000` – `0x0014_FFFF` | 64KB | Reserved（DMA 已移至 `0x0020_0000`，见下）|
 | `0x0015_0000` – `0x0015_FFFF` | 64KB | UART（扩展）（LSIO）|
 | `0x0016_0000` – `0x0016_FFFF` | 64KB | GPIO（LSIO，无中断）|
 | `0x0017_0000` – `0x0017_FFFF` | 64KB | Ethernet MAC（LSIO，内部 DMA）|
 | `0x0018_0000` – `0x0018_FFFF` | 64KB | SD/MMC（LSIO，内部 DMA）|
 | `0x0019_0000` – `0x0019_FFFF` | 64KB | RTC（LSIO）|
 | `0x001A_0000` – `0x001A_FFFF` | 64KB | PWM（LSIO，6 通道 16-bit 脉宽调制器）|
+| `0x0020_0000` – `0x002F_FFFF` | 1MB | DMA（sifive-blocks `dma`，1MB 对齐；仅 AP 使用，FSI 只读寄存器）|
 | `0xC000_0000` – `0xFFFF_FFFF` | 1GB | DDR3 主存 |
 
 > **AXI 隔离**：AP 专有域硬件硬编码隔离，不可访问 FSI 及 NPU 私有外设空间。
@@ -177,7 +178,7 @@ AP 主 Log 输出口（SiFive sifive-blocks `uart`，`0x3005_8000`），PLIC #1�
 | QSPI1 | SiFive sifive-blocks `spi` | `0x0011_0000` | #4 | SPI 外设；AP/FSI 读写，AP 中断，FSI 仅 Poll |
 | I2C0 | SiFive sifive-blocks `i2c` | `0x0012_0000` | #5 | EEPROM 等；AP/FSI 读写，AP/FSI 中断 |
 | I2C1 | SiFive sifive-blocks `i2c` | `0x0013_0000` | #6 | 扩展 I2C；AP/FSI 读写，AP 中断，FSI 仅 Poll |
-| DMA | SiFive sifive-blocks `dma` | `0x0014_0000` | #7 | 通用 DMA；AP 读写，FSI 只读 |
+| DMA | SiFive sifive-blocks `dma` | `0x0020_0000` | #7 | 通用 DMA（1MB 对齐）；AP 读写，FSI 只读 |
 | UART (扩展) | SiFive sifive-blocks `uart` | `0x0015_0000` | #2 | 扩展串口；AP/FSI 读写，AP 中断 |
 | GPIO | SiFive sifive-blocks `gpio` | `0x0016_0000` | — | AP/FSI 读写；无中断 |
 | Ethernet MAC | OpenCores `ethmac`（保留，QEMU `opencores_eth` 模型现成） | `0x0017_0000` | #9 | 内部 DMA；AP/FSI 读写，AP 中断 |

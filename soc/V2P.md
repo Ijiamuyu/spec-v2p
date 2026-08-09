@@ -22,14 +22,16 @@
 | `0x0011_0000` – `0x0011_FFFF` | 64KB | 全局 | QSPI1 | AP/FSI 读写；AP 中断使能，FSI 仅 Poll |
 | `0x0012_0000` – `0x0012_FFFF` | 64KB | 全局 | I2C0 | AP/FSI 读写；AP 中断使能，FSI 中断使能；挂载 EEPROM 24LC02 |
 | `0x0013_0000` – `0x0013_FFFF` | 64KB | 全局 | I2C1 | AP/FSI 读写；AP 中断使能，FSI 仅 Poll |
-| `0x0014_0000` – `0x0014_FFFF` | 64KB | 全局 | DMA | AP 读写，FSI 只读 |
+| `0x0014_0000` – `0x0014_FFFF` | 64KB | — | Reserved（DMA 已移至 `0x0020_0000`）|
 | `0x0015_0000` – `0x0015_FFFF` | 64KB | 全局 | UART（扩展）| AP/FSI 读写；AP 中断使能 |
 | `0x0016_0000` – `0x0016_FFFF` | 64KB | 全局 | GPIO | AP/FSI 读写；无中断 |
 | `0x0017_0000` – `0x0017_FFFF` | 64KB | 全局 | Ethernet MAC | AP/FSI 读写；内部 DMA，AP 中断使能 |
 | `0x0018_0000` – `0x0018_FFFF` | 64KB | 全局 | SD/MMC | AP/FSI 读写；内部 DMA，AP 中断使能 |
 | `0x0019_0000` – `0x0019_FFFF` | 64KB | 全局 | RTC | AP/FSI 读写；AP 中断使能 |
 | `0x001A_0000` – `0x001A_FFFF` | 64KB | 全局 | PWM | AP/FSI 读写；无中断，6 通道脉宽调制器 |
-| `0x001B_0000` – `0x0FFF_FFFF` | ~255MB | — | Reserved（后续可能添加系统控制寄存器映射）|
+| `0x001B_0000` – `0x001F_FFFF` | 320KB | — | Reserved（预留扩展）|
+| `0x0020_0000` – `0x002F_FFFF` | 1MB | 全局 | DMA（sifive-blocks `dma`，1MB 对齐；AP 读写，FSI 只读）|
+| `0x0030_0000` – `0x0FFF_FFFF` | ~255MB | — | Reserved（后续可能添加系统控制寄存器映射）|
 
 ### 区域 1: `0x1000_0000` – `0x1FFF_FFFF`（FSI IP 内存映射）
 
@@ -180,7 +182,7 @@ AP 外设清单详见 [`ap/ap.md`](ap/ap.md)。
 | QSPI1 | SiFive sifive-blocks `spi`（QSPI 模式） | `0x0011_0000` | AP/FSI 读写；AP 中断使能，FSI 仅 Poll |
 | I2C0 | SiFive sifive-blocks `i2c` | `0x0012_0000` | AP/FSI 读写；AP 中断使能，FSI 中断使能；挂载 EEPROM 24LC02 |
 | I2C1 | SiFive sifive-blocks `i2c` | `0x0013_0000` | AP/FSI 读写；AP 中断使能，FSI 仅 Poll |
-| DMA | SiFive sifive-blocks `dma` | `0x0014_0000` | AP 读写，FSI 只读；FSI 不得发起传输 |
+| DMA | SiFive sifive-blocks `dma` | `0x0020_0000` | AP 读写，FSI 只读；FSI 不得发起传输 |
 | UART (扩展) | SiFive sifive-blocks `uart` | `0x0015_0000` | AP/FSI 读写；AP 中断使能 |
 | GPIO | SiFive sifive-blocks `gpio` | `0x0016_0000` | AP/FSI 读写；无中断 |
 | Ethernet MAC | OpenCores `ethmac`（保留，QEMU `opencores_eth` 模型现成） | `0x0017_0000` | AP/FSI 读写；内部 DMA，AP 中断使能 |

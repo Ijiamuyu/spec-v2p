@@ -61,13 +61,13 @@
 | `0x0011_0000` | 64KB | QSPI1 | #4 | `sifive_spi` |
 | `0x0012_0000` | 64KB | I2C0 | #5 | `ocores-i2c`（自研）+ `at24c(24LC02)` |
 | `0x0013_0000` | 64KB | I2C1 | #6 | `ocores-i2c`（自研） |
-| `0x0014_0000` | 64KB | DMA | #7 | `sifive_pdma` |
 | `0x0015_0000` | 64KB | UART 扩展 | #2 | `sifive_uart` |
 | `0x0016_0000` | 64KB | GPIO | — | `sifive_gpio` |
 | `0x0017_0000` | 64KB | Ethernet MAC | #9 | `opencores_eth` |
 | `0x0018_0000` | 64KB | SD/MMC | #10 | `cadence_sdhci` + SD 卡 |
 | `0x0019_0000` | 64KB | RTC | #15 | `goldfish_rtc` 或 自研 |
 | `0x001A_0000` | 64KB | PWM | — | `sifive_pwm` |
+| `0x0020_0000` | 1MB | DMA | #7 | `sifive_pdma`（1MB 对齐）|
 
 > 地址/中断编号与 `spec/soc/V2P.md`、`spec/soc/ap/ap.md` 完全一致。未列出区域保持 unimp 占位。
 > PLIC 目标上下文规划：`"MS,MS,MS,MS"`（每核 M+S，匹配 core-v-plic 双模式）。
