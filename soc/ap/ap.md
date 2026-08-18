@@ -53,7 +53,7 @@ AP 子系统是 V2P SoC 的高性能应用处理域，包含 4 核 VexRiscv-SMP 
 | `0x0018_0000` – `0x0018_FFFF` | 64KB | SD/MMC（LSIO，内部 DMA）|
 | `0x0019_0000` – `0x0019_FFFF` | 64KB | RTC（LSIO）|
 | `0x001A_0000` – `0x001A_FFFF` | 64KB | PWM（LSIO，6 通道 16-bit 脉宽调制器）|
-| `0x0020_0000` – `0x002F_FFFF` | 1MB | DMA（sifive-blocks `dma`，1MB 对齐；仅 AP 使用，FSI 只读寄存器）|
+| `0x0020_0000` – `0x002F_FFFF` | 1MB | DMA（SiFive FU540 PDMA，1MB 对齐；仅 AP 使用，FSI 只读寄存器）|
 | `0xC000_0000` – `0xFFFF_FFFF` | 1GB | DDR3 主存 |
 
 > **AXI 隔离**：AP 专有域硬件硬编码隔离，不可访问 FSI 及 NPU 私有外设空间。
@@ -92,8 +92,8 @@ PLIC（`0x3000_0000`，OpenHW core-v-plic）将 SoC 内所有外设中断集中�
 | 4 | LSIO QSPI1 | SPI 外设 |
 | 5 | LSIO I2C0 | EEPROM 及其他 I2C 设备 |
 | 6 | LSIO I2C1 | 扩展 I2C |
-| 7 | LSIO DMA | DMA 传输完成 |
-| 8 | LSIO GPIO | 无中断，仅 Poll |
+| 7 | LSIO DMA done | DMA 传输完成 |
+| 8 | LSIO DMA err | DMA 传输错误 |
 | 9 | Ethernet | 网络收发 |
 | 10 | SD/MMC | 存储卡 |
 | 11 | AP Core0 WDT | 每核独立看门狗预警 |
@@ -114,6 +114,9 @@ PLIC（`0x3000_0000`，OpenHW core-v-plic）将 SoC 内所有外设中断集中�
 | 26 | Doorbell DB_FSI_AP1 | FSI→AP1 核间通知 |
 | 27 | Doorbell DB_FSI_AP2 | FSI→AP2 核间通知 |
 | 28 | Doorbell DB_FSI_AP3 | FSI→AP3 核间通知 |
+| 29 | — | Reserved |
+| 30 | — | Reserved |
+| 31 | — | Reserved |
 
 ## 看门狗 (WDT)
 
@@ -153,6 +156,29 @@ AP 主 Log 输出口（SiFive sifive-blocks `uart`，`0x3005_8000`），PLIC #1�
 - AP 系统主控制台，用于内核启动日志、应用程序输出
 - FSI 可通过 AXI 跨域读取 UART 寄存器以监控 AP 状态（日志轮询）
 
+## DMA（通用 DMA，M2M）
+
+AP 域通用 DMA 采用 **SiFive FU540 PDMA**（QEMU 模型 `sifive_pdma`，compatible `sifive,fu540-c000-pdma`），单实例 4 通道。DMA 为**软件配置型内存搬运引擎**（写 NEXT_SRC/NEXT_DST/NEXT_BYTES 指定地址），**仅支持 M2M 传输**（无外设 handshake 接口，外设 DMA 不可行）。
+
+| 实例 | 地址 | 中断 (PLIC#) | 通道 |
+|------|------|-------------|------|
+| DMA | `0x0020_0000`（1MB） | done #7 / err #8 | ch0–3 |
+
+### 通道分配约定（软件约定，非硬件绑定）
+
+| 通道 | 用途 |
+|------|------|
+| ch0 | M2M 读（A→B） |
+| ch1 | M2M 写（B→A） |
+| ch2 | 预留（M2M 扩展） |
+| ch3 | 预留（M2M 扩展） |
+
+> 每通道 2 个中断（done/err，`CONTROL.DONE_IE`/`CONTROL.ERR_IE` 分别使能），多通道共享同一 done 源与同一 err 源（软件读 CONTROL 区分通道）。
+> **IRQ 合并（方案 A）**：硬件 8 根 IRQ 线（4 通道 × done/err）在 RTL 层合并——4×done 线 OR → PLIC #7，4×err 线 OR → PLIC #8。
+> **通道识别**：PDMA 无全局通道状态寄存器，软件收到中断后需轮询各通道 CONTROL 的 DONE/ERR 位（bit30/bit31）判断来源通道并清除。
+> 权限：AP 读写，FSI 只读；FSI 不得发起传输。
+> ⚠️ PDMA 仅支持 M2M（无外设 handshake），UART/SPI/I2C 外设 DMA 在 RTL 上不可行，外设传输走 CPU 中断。
+
 ## 外设清单
 
 | IP | 来源 | 地址 | 说明 |
@@ -178,7 +204,7 @@ AP 主 Log 输出口（SiFive sifive-blocks `uart`，`0x3005_8000`），PLIC #1�
 | QSPI1 | SiFive sifive-blocks `spi` | `0x0011_0000` | #4 | SPI 外设；AP/FSI 读写，AP 中断，FSI 仅 Poll |
 | I2C0 | SiFive sifive-blocks `i2c` | `0x0012_0000` | #5 | EEPROM 等；AP/FSI 读写，AP/FSI 中断 |
 | I2C1 | SiFive sifive-blocks `i2c` | `0x0013_0000` | #6 | 扩展 I2C；AP/FSI 读写，AP 中断，FSI 仅 Poll |
-| DMA | SiFive sifive-blocks `dma` | `0x0020_0000` | #7 | 通用 DMA（1MB 对齐）；AP 读写，FSI 只读 |
+| DMA | SiFive FU540 PDMA | `0x0020_0000` | #7/#8 | 通用 DMA（M2M，1MB 对齐）；done #7，err #8；AP 读写，FSI 只读 |
 | UART (扩展) | SiFive sifive-blocks `uart` | `0x0015_0000` | #2 | 扩展串口；AP/FSI 读写，AP 中断 |
 | GPIO | SiFive sifive-blocks `gpio` | `0x0016_0000` | — | AP/FSI 读写；无中断 |
 | Ethernet MAC | OpenCores `ethmac`（保留，QEMU `opencores_eth` 模型现成） | `0x0017_0000` | #9 | 内部 DMA；AP/FSI 读写，AP 中断 |

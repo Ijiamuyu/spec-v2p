@@ -67,7 +67,7 @@
 | `0x0018_0000` | 64KB | SD/MMC | #10 | `cadence_sdhci` + SD 卡 |
 | `0x0019_0000` | 64KB | RTC | #15 | `goldfish_rtc` 或 自研 |
 | `0x001A_0000` | 64KB | PWM | — | `sifive_pwm` |
-| `0x0020_0000` | 1MB | DMA | #7 | `sifive_pdma`（1MB 对齐）|
+| `0x0020_0000` | 1MB | DMA | #7/#8 | `sifive_pdma`（1MB 对齐；done #7，err #8）|
 
 > 地址/中断编号与 `spec/soc/V2P.md`、`spec/soc/ap/ap.md` 完全一致。未列出区域保持 unimp 占位。
 > PLIC 目标上下文规划：`"MS,MS,MS,MS"`（每核 M+S，匹配 core-v-plic 双模式）。

@@ -98,7 +98,7 @@
 | QSPI（SPI 模式） | ×2 | ~2K | — | — |
 | I2C | ×2 | ~1K | — | — |
 | UART（扩展） | ×1 | ~0.5K | — | — |
-| DMA（多通道 Scatter-Gather） | ×1 | ~5K | ~2 | — |
+| DMA（4 通道 M2M 内存搬运） | ×1 | ~5K | ~2 | — |
 | GPIO | ×1 | ~0.5K | — | — |
 | Ethernet MAC（1000Mbps） | ×1 | ~7K | ~4 | — |
 | SD/MMC（含 FIFO、CDC） | ×1 | ~3.5K | ~2 | — |
