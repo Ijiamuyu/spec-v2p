@@ -202,8 +202,8 @@ AP 域通用 DMA 采用 **SiFive FU540 PDMA**（QEMU 模型 `sifive_pdma`，comp
 |----|------|------|-------------|------|
 | QSPI0 | SiFive sifive-blocks `spi` | `0x0010_0000` | #3 | SPI Flash；AP/FSI 读写，AP/FSI 中断 |
 | QSPI1 | SiFive sifive-blocks `spi` | `0x0011_0000` | #4 | SPI 外设；AP/FSI 读写，AP 中断，FSI 仅 Poll |
-| I2C0 | SiFive sifive-blocks `i2c` | `0x0012_0000` | #5 | EEPROM 等；AP/FSI 读写，AP/FSI 中断 |
-| I2C1 | SiFive sifive-blocks `i2c` | `0x0013_0000` | #6 | 扩展 I2C；AP/FSI 读写，AP 中断，FSI 仅 Poll |
+| I2C0 | SiFive sifive-blocks `i2c`（compatible `sifive,fu540-c000-i2c`） | `0x0012_0000` | #5 | EEPROM 24LC02 等；AP/FSI 读写，AP/FSI 中断 |
+| I2C1 | SiFive sifive-blocks `i2c`（compatible `sifive,fu540-c000-i2c`） | `0x0013_0000` | #6 | 扩展 I2C；AP/FSI 读写，AP 中断，FSI 仅 Poll |
 | DMA | SiFive FU540 PDMA | `0x0020_0000` | #7/#8 | 通用 DMA（M2M，1MB 对齐）；done #7，err #8；AP 读写，FSI 只读 |
 | UART (扩展) | SiFive sifive-blocks `uart` | `0x0015_0000` | #2 | 扩展串口；AP/FSI 读写，AP 中断 |
 | GPIO | SiFive sifive-blocks `gpio` | `0x0016_0000` | — | AP/FSI 读写；无中断 |

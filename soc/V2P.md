@@ -150,6 +150,13 @@ AP 和 FSI 均使用 VexRiscv 内置 RISC-V Debug Spec v0.13 Plugin（halt/step/
 
 `0x001A_0000`，6 通道 16-bit，AP/FSI 均可配置。SiFive sifive-blocks `pwm` + AXI4-Lite 包裹，每通道独立使能/极性/占空比，无中断。典型用途：LED、背光、蜂鸣器、电机。
 
+## I2C
+
+`0x0012_0000`（I2C0）/ `0x0013_0000`（I2C1），AP/FSI 均可配置。SiFive sifive-blocks `i2c`，寄存器级定义详见 [`ip/sifive-i2c.md`](ip/sifive-i2c.md)。
+
+- **I2C0**：挂载 **EEPROM 24LC02**，存 MAC 地址、板级版本、校准数据等非安全持久化配置。中断接 AP PLIC #5 / FSI PLIC #8。
+- **I2C1**：扩展 I2C 设备。中断接 AP PLIC #6（FSI 仅 Poll）。
+
 ## eFuse OTP
 
 eFuse OTP 详见 [`fsi/fsi.md`](fsi/fsi.md)。
@@ -180,8 +187,8 @@ AP 外设清单详见 [`ap/ap.md`](ap/ap.md)。
 |----|------|------|------|
 | QSPI0 | SiFive sifive-blocks `spi`（QSPI 模式） | `0x0010_0000` | AP/FSI 读写；AP 中断使能，FSI 中断使能 |
 | QSPI1 | SiFive sifive-blocks `spi`（QSPI 模式） | `0x0011_0000` | AP/FSI 读写；AP 中断使能，FSI 仅 Poll |
-| I2C0 | SiFive sifive-blocks `i2c` | `0x0012_0000` | AP/FSI 读写；AP 中断使能，FSI 中断使能；挂载 EEPROM 24LC02 |
-| I2C1 | SiFive sifive-blocks `i2c` | `0x0013_0000` | AP/FSI 读写；AP 中断使能，FSI 仅 Poll |
+| I2C0 | SiFive sifive-blocks `i2c`（compatible `sifive,fu540-c000-i2c`） | `0x0012_0000` | AP/FSI 读写；AP 中断使能，FSI 中断使能；挂载 EEPROM 24LC02 |
+| I2C1 | SiFive sifive-blocks `i2c`（compatible `sifive,fu540-c000-i2c`） | `0x0013_0000` | AP/FSI 读写；AP 中断使能，FSI 仅 Poll |
 | DMA | SiFive FU540 PDMA | `0x0020_0000` | AP 读写，FSI 只读；FSI 不得发起传输 |
 | UART (扩展) | SiFive sifive-blocks `uart` | `0x0015_0000` | AP/FSI 读写；AP 中断使能 |
 | GPIO | SiFive sifive-blocks `gpio` | `0x0016_0000` | AP/FSI 读写；无中断 |
