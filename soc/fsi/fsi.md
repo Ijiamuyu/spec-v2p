@@ -43,7 +43,7 @@ FSI 是 V2P SoC 的安全核子系统，包含 1 个 VexRiscv RV32 处理器及�
 | `0x3005_8000` – `0x3005_8FFF` | 4KB | AP UART（跨域读取，监控 AP 状态）|
 | `0x0010_0000` – `0x0010_FFFF` | 64KB | QSPI0（中断支持）|
 | `0x0011_0000` – `0x0011_FFFF` | 64KB | QSPI1（仅 Poll）|
-| `0x0012_0000` – `0x0012_FFFF` | 64KB | I2C0（中断支持，挂载 EEPROM 24LC02）|
+| `0x0012_0000` – `0x0012_FFFF` | 64KB | I2C0（中断支持，挂载 EEPROM 24C64）|
 | `0x0013_0000` – `0x0013_FFFF` | 64KB | I2C1（仅 Poll）|
 | `0x0014_0000` – `0x0014_FFFF` | 64KB | Reserved（DMA 已移至 `0x0020_0000`）|
 | `0x0015_0000` – `0x0015_FFFF` | 64KB | UART（扩展，AP/FSI 读写；AP 中断使能）|

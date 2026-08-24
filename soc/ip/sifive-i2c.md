@@ -14,7 +14,7 @@ I2C 控制器采用 **SiFive sifive-blocks `i2c`**（OpenCores `i2c_master_top`�
 | 寄存器步进 | **32-bit**（`reg-shift=2`），仅低 8 位有效，高 24 位保留（读 0）|
 | 访问权限 | AP / FSI 均可读写 |
 | 中断 | I2C0 → AP PLIC #5 / FSI PLIC #8；I2C1 → AP PLIC #6（FSI 仅 Poll，无中断通路）|
-| 挂载设备 | I2C0 挂 EEPROM 24LC02（从地址 `0xA0`）|
+| 挂载设备 | I2C0 挂 EEPROM 24C64（从地址 `0xA0`，64Kbit）|
 
 ---
 
@@ -105,7 +105,7 @@ START → 发 dev_addr|W → 发内部地址（reg_width 字节）→ START(重�
 ```
 
 - `dev_addr` 为 8-bit 地址（含 R/W 位）：写用 `dev_addr & ~1`，读用 `dev_addr | 1`。
-- 24LC02 内部地址为 1 字节（`reg_width=1`）。
+- 24C64 内部地址为 2 字节（`reg_width=2`）。
 
 ---
 

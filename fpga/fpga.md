@@ -17,7 +17,7 @@
 |------|------|
 | DDR3 | 1GB（16bit × 4 颗粒） |
 | SPI Flash | N25Q256（256Mb，支持 XIP） |
-| EEPROM | 24LC02（I2C） |
+| EEPROM | 24C64（I2C，64Kbit） |
 | 存储 | SD 卡槽 |
 | 显示 | LCD 接口 |
 | 高速互联 | PCIe ×4、万兆光纤（SFP+） |

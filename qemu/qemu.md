@@ -59,7 +59,7 @@
 | `0x3005_7000` | 4KB | Timer Core3 | #19 | 同上 |
 | `0x0010_0000` | 64KB | QSPI0 | #3 | `sifive_spi` + `m25p80(n25q256a)` |
 | `0x0011_0000` | 64KB | QSPI1 | #4 | `sifive_spi` |
-| `0x0012_0000` | 64KB | I2C0 | #5 | `ocores-i2c`（自研）+ `at24c(24LC02)` |
+| `0x0012_0000` | 64KB | I2C0 | #5 | `ocores-i2c`（自研）+ `at24c(24C64)` |
 | `0x0013_0000` | 64KB | I2C1 | #6 | `ocores-i2c`（自研） |
 | `0x0015_0000` | 64KB | UART 扩展 | #2 | `sifive_uart` |
 | `0x0016_0000` | 64KB | GPIO | — | `sifive_gpio` |

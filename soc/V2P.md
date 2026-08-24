@@ -20,7 +20,7 @@
 | `0x000F_0000` – `0x000F_FFFF` | 64KB | — | Reserved |
 | `0x0010_0000` – `0x0010_FFFF` | 64KB | 全局 | QSPI0 | AP/FSI 读写；AP 中断使能，FSI 中断使能 |
 | `0x0011_0000` – `0x0011_FFFF` | 64KB | 全局 | QSPI1 | AP/FSI 读写；AP 中断使能，FSI 仅 Poll |
-| `0x0012_0000` – `0x0012_FFFF` | 64KB | 全局 | I2C0 | AP/FSI 读写；AP 中断使能，FSI 中断使能；挂载 EEPROM 24LC02 |
+| `0x0012_0000` – `0x0012_FFFF` | 64KB | 全局 | I2C0 | AP/FSI 读写；AP 中断使能，FSI 中断使能；挂载 EEPROM 24C64 |
 | `0x0013_0000` – `0x0013_FFFF` | 64KB | 全局 | I2C1 | AP/FSI 读写；AP 中断使能，FSI 仅 Poll |
 | `0x0014_0000` – `0x0014_FFFF` | 64KB | — | Reserved（DMA 已移至 `0x0020_0000`）|
 | `0x0015_0000` – `0x0015_FFFF` | 64KB | 全局 | UART（扩展）| AP/FSI 读写；AP 中断使能 |
@@ -84,7 +84,7 @@
 >
 > **IPC_CTRL / SPINLOCK**（`0x000C_2000` / `0x000C_3000`）：所有主设备可读写，详见 [`ip/ipc.md`](ip/ipc.md)。
 >
-> **LSIO**（`0x0010_0000`–`0x001A_FFFF`）：QSPI0/1 + I2C0/1 等公共外设。EEPROM（24LC02）挂 I2C0，存 MAC 地址、板级版本、校准数据等非安全持久化配置。AP 通过 PLIC 获取全部 LSIO 中断；FSI 本地中断仅侦听 QSPI0 和 I2C0，QSPI1/I2C1 仅 Poll。DMA 仅 AP 使用，FSI 只读寄存器。Ethernet MAC / SD/MMC 使用内部 DMA。
+> **LSIO**（`0x0010_0000`–`0x001A_FFFF`）：QSPI0/1 + I2C0/1 等公共外设。EEPROM（24C64）挂 I2C0，存 MAC 地址、板级版本、校准数据等非安全持久化配置。AP 通过 PLIC 获取全部 LSIO 中断；FSI 本地中断仅侦听 QSPI0 和 I2C0，QSPI1/I2C1 仅 Poll。DMA 仅 AP 使用，FSI 只读寄存器。Ethernet MAC / SD/MMC 使用内部 DMA。
 >
 > **编址粒度**：FSI 密码协处理器（AES/SHA/RSA/TRNG，`0x1000_0000`–`0x1003_FFFF`）以 64KB 步进；FSI 简单 IP（WDT/UART/Timer/PMU，`0x1004_0000`–`0x100D_0FFF`）以 4KB 步进；AP 私密外设（`0x3005_0000`–`0x3005_9FFF`）以 4KB 步进；LSIO 外设（`0x0010_0000`–`0x001A_FFFF`）以 64KB 步进。
 
@@ -154,7 +154,7 @@ AP 和 FSI 均使用 VexRiscv 内置 RISC-V Debug Spec v0.13 Plugin（halt/step/
 
 `0x0012_0000`（I2C0）/ `0x0013_0000`（I2C1），AP/FSI 均可配置。SiFive sifive-blocks `i2c`，寄存器级定义详见 [`ip/sifive-i2c.md`](ip/sifive-i2c.md)。
 
-- **I2C0**：挂载 **EEPROM 24LC02**，存 MAC 地址、板级版本、校准数据等非安全持久化配置。中断接 AP PLIC #5 / FSI PLIC #8。
+- **I2C0**：挂载 **EEPROM 24C64**，存 MAC 地址、板级版本、校准数据等非安全持久化配置。中断接 AP PLIC #5 / FSI PLIC #8。
 - **I2C1**：扩展 I2C 设备。中断接 AP PLIC #6（FSI 仅 Poll）。
 
 ## eFuse OTP
@@ -187,7 +187,7 @@ AP 外设清单详见 [`ap/ap.md`](ap/ap.md)。
 |----|------|------|------|
 | QSPI0 | SiFive sifive-blocks `spi`（QSPI 模式） | `0x0010_0000` | AP/FSI 读写；AP 中断使能，FSI 中断使能 |
 | QSPI1 | SiFive sifive-blocks `spi`（QSPI 模式） | `0x0011_0000` | AP/FSI 读写；AP 中断使能，FSI 仅 Poll |
-| I2C0 | SiFive sifive-blocks `i2c`（compatible `sifive,fu540-c000-i2c`） | `0x0012_0000` | AP/FSI 读写；AP 中断使能，FSI 中断使能；挂载 EEPROM 24LC02 |
+| I2C0 | SiFive sifive-blocks `i2c`（compatible `sifive,fu540-c000-i2c`） | `0x0012_0000` | AP/FSI 读写；AP 中断使能，FSI 中断使能；挂载 EEPROM 24C64 |
 | I2C1 | SiFive sifive-blocks `i2c`（compatible `sifive,fu540-c000-i2c`） | `0x0013_0000` | AP/FSI 读写；AP 中断使能，FSI 仅 Poll |
 | DMA | SiFive FU540 PDMA | `0x0020_0000` | AP 读写，FSI 只读；FSI 不得发起传输 |
 | UART (扩展) | SiFive sifive-blocks `uart` | `0x0015_0000` | AP/FSI 读写；AP 中断使能 |
