@@ -47,7 +47,7 @@
 | `0x1004_3000` – `0x1007_FFFF` | ~240KB | — | Reserved |
 | `0x1008_0000` – `0x100B_FFFF` | 256KB | FSI | PLIC（core-v-plic，M模式）|
 | `0x100C_0000` – `0x100C_FFFF` | 64KB | FSI | CLINT |
-| `0x100D_0000` – `0x100D_0FFF` | 4KB | FSI | PMU，电源管理与复位控制器，详见PMU |
+| `0x100D_0000` – `0x100D_0FFF` | 4KB | FSI | PMU，电源管理与复位控制器，详见「PMU」节 |
 | `0x100D_1000` – `0x1FFF_FFFF` | ~255MB | — | Reserved |
 
 ### 区域 2: `0x3000_0000` – `0x3FFF_FFFF`（AP 内存映射）
@@ -65,7 +65,7 @@
 | `0x3005_6000` – `0x3005_6FFF` | 4KB | AP | Timer (Core2) |
 | `0x3005_7000` – `0x3005_7FFF` | 4KB | AP | Timer (Core3) |
 | `0x3005_8000` – `0x3005_8FFF` | 4KB | AP | UART（AP Dedicated），主 Log 输出口；FSI 可跨域读取以监控 AP 状态 |
-| `0x3005_9000` – `0x3005_9FFF` | 4KB | AP | Debug Module（AP），JTAG 调试接口，始终使能，详见 §Debug |
+| `0x3005_9000` – `0x3005_9FFF` | 4KB | AP | Debug Module（AP），JTAG 调试接口，始终使能，详见「Debug」节 |
 | `0x3005_A000` – `0x3FFF_FFFF` | ~256MB | — | Reserved |
 
 ### 区域 3: `0x4000_0000` – `0x4FFF_FFFF`（NPU 内存映射，待细化）
@@ -122,7 +122,7 @@ NPU 本地中断详见 [`npu/npu.md`](npu/npu.md)。
 | NPU WDT | FSI 中断 #9 → FSI 固件复位 NPU |
 | FSI WDT | SoC 全局复位，无需软件干预 |
 
-> PMU 统一接管复位分发。FSI 通过 PMU 寄存器查询复位源及各域状态。详见 §PMU。
+> PMU 统一接管复位分发。FSI 通过 PMU 寄存器查询复位源及各域状态。详见「PMU」节。
 
 ## 调试 (Debug)
 
