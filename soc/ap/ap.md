@@ -2,15 +2,15 @@
 
 ## 概述
 
-AP 子系统是 V2P SoC 的高性能应用处理域，包含 4 核 VexRiscv-SMP (RV64) 处理器集群及配套的中断控制器、定时器、看门狗、调试模块等私密外设。AP 通过 AXI 总线访问公共外设（LSIO）和共享系统资源，与 FSI（安全核）及 NPU 之间通过 IPC_CTRL / SPINLOCK 进行核间通信。
+AP 子系统是 V2P SoC 的高性能应用处理域，包含 4 核 VexRiscv-SMP (RV32) 处理器集群及配套的中断控制器、定时器、看门狗、调试模块等私密外设。AP 通过 AXI 总线访问公共外设（LSIO）和共享系统资源，与 FSI（安全核）及 NPU 之间通过 IPC_CTRL / SPINLOCK 进行核间通信。
 
 ## 处理器核
 
 | 项目 | 说明 |
 |------|------|
 | IP | VexRiscv-SMP ×4（SpinalHDL）|
-| 架构 | RV64IMAFDC |
-| MMU | Sv39 页表方案 |
+| 架构 | RV32IMAFDC |
+| MMU | Sv32 页表方案 |
 | 缓存 | 硬件维护缓存一致性（SMP 协同）|
 | 调试 | 内置 RISC-V Debug Spec v0.13 Plugin（halt/step/resume、寄存器/内存访问）|
 
@@ -33,7 +33,7 @@ AP 子系统是 V2P SoC 的高性能应用处理域，包含 4 核 VexRiscv-SMP 
 | `0x3005_6000` – `0x3005_6FFF` | 4KB | Timer (Core2) |
 | `0x3005_7000` – `0x3005_7FFF` | 4KB | Timer (Core3) |
 | `0x3005_8000` – `0x3005_8FFF` | 4KB | UART（AP Dedicated），主 Log 输出口；FSI 可跨域读取以监控 AP 状态 |
-| `0x3005_9000` – `0x3005_9FFF` | 4KB | Debug Module (AP)，JTAG 调试接口，始终使能 |
+| `0x3005_9000` – `0x3005_9FFF` | 4KB | Debug Module (AP)，外部 JTAG 调试为主路径；`0x3005_9000` 窗供 FSI 片上访问，**权限访问机制未实现**（认证/访问控制待补），始终使能 |
 
 ### AP 可访问的共享资源
 
@@ -64,7 +64,7 @@ AP 子系统是 V2P SoC 的高性能应用处理域，包含 4 核 VexRiscv-SMP 
 
 ### AP 本地中断 (CLINT)
 
-CLINT（`0x3004_0000`，OpenPULP）为每核提供 1 路软件中断和 1 路定时器中断（mtime），共 8 路本地中断。
+CLINT（`0x3004_0000`，SpinalHDL `Clint`，寄存器偏移与 QEMU riscv_aclint 兼容）为每核提供 1 路软件中断和 1 路定时器中断（mtime），共 8 路本地中断。
 
 | 中断号 | 源 | 说明 |
 |--------|-----|------|
@@ -81,7 +81,7 @@ CLINT（`0x3004_0000`，OpenPULP）为每核提供 1 路软件中断和 1 路定
 
 ### AP 外部中断 (PLIC)
 
-PLIC（`0x3000_0000`，OpenHW core-v-plic）将 SoC 内所有外设中断集中路由至 AP 四核，支持优先级配置与中断屏蔽。
+PLIC（`0x3000_0000`，SpinalHDL `BmbPlic`）将 SoC 内所有外设中断集中路由至 AP 四核，支持优先级配置与中断屏蔽。
 
 | 中断号 | 源 | 说明 |
 |--------|-----|------|
@@ -118,6 +118,17 @@ PLIC（`0x3000_0000`，OpenHW core-v-plic）将 SoC 内所有外设中断集中�
 | 30 | — | Reserved |
 | 31 | — | Reserved |
 
+### PLIC 上下文与优先级
+
+| 项目 | 说明 |
+|------|------|
+| 优先级 | 7 级（`priorityWidth=3`，0 为禁用，值越大优先级越高）|
+| 上下文数 | 8 个（4 核 × M/S 模式），target 编号 = hart × 2 + mode（M=0，S=1）|
+| threshold | `0x38000 + target × 0x1000` |
+| claim / complete | threshold 基址 + `0x4`（读为 claim，写为 complete）|
+
+> 上下文区落在 PLIC 256KB 窗内（8 个 target 填至 `0x3F004`），布局与 QEMU（`sifive_plic_create`，context_base=`0x38000`）及 RTOS 驱动（`PLIC_CTX_BASE`）一致。
+
 ## 看门狗 (WDT)
 
 AP 四核各有独立 WDT（SiFive sifive-blocks `wdt`，OpenCores `watch_dog` 同源），支持两阶段超时机制：
@@ -145,13 +156,13 @@ AP 调试**始终使能**，不受 PMU 控制。
 | 项目 | 说明 |
 |------|------|
 | 协议 | RISC-V Debug Spec v0.13（halt/step/resume、寄存器/内存访问）|
-| JTAG 路径 | BSCANE2（复用 Xilinx JTAG 引脚）→ DTM → DM |
+| JTAG 路径 | 外部 TAP / BSCANE2（复用 Xilinx JTAG 引脚）→ DTM → DM |
 | 调试能力 | 独立 halt/step 4 核 |
 | 主机侧 | OpenOCD + GDB |
 
 ## UART（AP Dedicated）
 
-AP 主 Log 输出口（SiFive sifive-blocks `uart`，`0x3005_8000`），PLIC #1。
+AP 主 Log 输出口（自研 sifive 兼容 `uart`，`0x3005_8000`，寄存器集兼容 SiFive sifive-blocks），PLIC #1。
 
 - AP 系统主控制台，用于内核启动日志、应用程序输出
 - FSI 可通过 AXI 跨域读取 UART 寄存器以监控 AP 状态（日志轮询）
@@ -183,8 +194,8 @@ AP 域通用 DMA 采用 **SiFive FU540 PDMA**（QEMU 模型 `sifive_pdma`，comp
 
 | IP | 来源 | 地址 | 说明 |
 |----|------|------|------|
-| PLIC | OpenHW core-v-plic | `0x3000_0000` | 平台级中断控制器，256KB |
-| CLINT | OpenPULP | `0x3004_0000` | 核级本地中断控制器 |
+| PLIC | SpinalHDL `BmbPlic` | `0x3000_0000` | 平台级中断控制器，256KB |
+| CLINT | SpinalHDL `Clint` | `0x3004_0000` | 核级本地中断控制器，寄存器偏移兼容 QEMU riscv_aclint |
 | WDT (Core0) | SiFive sifive-blocks `wdt` | `0x3005_0000` | 两阶段看门狗 |
 | WDT (Core1) | SiFive sifive-blocks `wdt` | `0x3005_1000` | 两阶段看门狗 |
 | WDT (Core2) | SiFive sifive-blocks `wdt` | `0x3005_2000` | 两阶段看门狗 |
@@ -193,7 +204,7 @@ AP 域通用 DMA 采用 **SiFive FU540 PDMA**（QEMU 模型 `sifive_pdma`，comp
 | Timer (Core1) | OpenCores `timer` | `0x3005_5000` | 高精度定时器 |
 | Timer (Core2) | OpenCores `timer` | `0x3005_6000` | 高精度定时器 |
 | Timer (Core3) | OpenCores `timer` | `0x3005_7000` | 高精度定时器 |
-| UART (AP Dedicated) | SiFive sifive-blocks `uart` | `0x3005_8000` | 主 Log 输出口 |
+| UART (AP Dedicated) | 自研 sifive 兼容 `uart` | `0x3005_8000` | 主 Log 输出口，寄存器集兼容 SiFive sifive-blocks |
 | Debug Module (AP) | VexRiscv-SMP 内置 | `0x3005_9000` | JTAG 调试接口，始终使能 |
 
 ### AP 可访问的公共外设（LSIO）

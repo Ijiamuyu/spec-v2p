@@ -54,7 +54,7 @@
 
 | 地址范围 | 容量 | 归属 | 说明 |
 |----------|------|------|------|
-| `0x3000_0000` – `0x3003_FFFF` | 256KB | AP | PLIC（core-v-plic，M/S模式），外部中断控制器 |
+| `0x3000_0000` – `0x3003_FFFF` | 256KB | AP | PLIC（SpinalHDL `BmbPlic`，M/S模式），外部中断控制器 |
 | `0x3004_0000` – `0x3004_FFFF` | 64KB | AP | CLINT，本地中断控制器 |
 | `0x3005_0000` – `0x3005_0FFF` | 4KB | AP | WDT (Core0) |
 | `0x3005_1000` – `0x3005_1FFF` | 4KB | AP | WDT (Core1) |
@@ -96,7 +96,7 @@ AP CLINT 本地中断详见 [`ap/ap.md`](ap/ap.md)。
 
 ### AP 外部中断 (PLIC)
 
-AP 使用 **core-v-plic**（OpenHW Group 开源 RISC-V PLIC），支持 M/S 双模式中断转发。
+AP 使用 **SpinalHDL BmbPlic**（与 SpinalHDL 核同源生成、参数耦合），支持 M/S 双模式中断转发。
 - **M 模式**：各核 MEIP 接收 OpenSBI（SEE）中断，用于异常转发与核间中断管理。
 - **S 模式**：各核 SEIP 接收 OS（Linux）外部中断，经 OpenSBI 委托后直通 Linux。
 
@@ -169,7 +169,7 @@ eFuse OTP 详见 [`fsi/fsi.md`](fsi/fsi.md)。
 
 | IP | 归属 | 说明 |
 |----|------|------|
-| VexRiscv-SMP ×4 | AP | SpinalHDL，RV64IMAFDC，Sv39 MMU，缓存一致性 |
+| VexRiscv-SMP ×4 | AP | SpinalHDL，RV32IMAFDC，Sv32 MMU，缓存一致性 |
 | Coral NPU | NPU | Google-Verisilicon，RV32IMF_Zve32x，标量+向量+矩阵 MAC；内置 WDT |
 | VexRiscv RV32 | FSI | SpinalHDL，RV32IM，安全核 |
 
@@ -203,7 +203,7 @@ AP 外设清单详见 [`ap/ap.md`](ap/ap.md)。
 |----|------|------|
 | AXI 互联 | OpenPULP `axi` | 多主多从总线 |
 | DDR3 控制器 | Xilinx MIG | DDR3 接口 |
-| PLIC（AP） | OpenHW core-v-plic | `0x3000_0000`，支持 M/S 模式，4 个目标上下文（每核 M+SEIP）|
+| PLIC（AP） | SpinalHDL `BmbPlic` | `0x3000_0000`，支持 M/S 模式，8 个上下文（每核 M+S），详见 ap.md |
 | PLIC（FSI） | OpenHW core-v-plic | `0x1008_0000`，仅 M 模式，单目标上下文 |
 | **IPC_CTRL** | **自研** | **`0x000C_2000`，核间通信控制器，含 Doorbell + IPI 状态 + 队列控制寄存器**，详见 [`ip/ipc.md`](ip/ipc.md) |
 | **SPINLOCK** | **自研** | **`0x000C_3000`，硬件同步锁控制器，含 32 路 test-and-set 锁寄存器**，详见 [`ip/ipc.md`](ip/ipc.md) |
@@ -225,4 +225,4 @@ AP 外设清单详见 [`ap/ap.md`](ap/ap.md)。
 |----|----------|------|
 | FSI (RV32) | `0x0000_1000` | BootROM 代码区入口（前 4KB 为 eFuse OTP）|
 | NPU (RV32) | `0x000B_8000` | FSI 加载后跳转 |
-| AP (RV64) | `0xC000_0000` | FSI 加载 OpenSBI 后跳转 |
+| AP (RV32) | `0xC000_0000` | FSI 加载 OpenSBI 后跳转 |
