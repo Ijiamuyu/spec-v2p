@@ -16,8 +16,8 @@
 │  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐ │
 │  │  Hart 0  │  │  Hart 1  │  │  Hart 2  │  │  Hart 3  │ │
 │  │ sifive-  │  │ sifive-  │  │ sifive-  │  │ sifive-  │ │
-│  │   u54    │  │   u54    │  │   u54    │  │   u54    │ │
-│  │ RV64 MSU │  │ RV64 MSU │  │ RV64 MSU │  │ RV64 MSU │ │
+│  │   u34    │  │   u34    │  │   u34    │  │   u34    │ │
+│  │ RV32 MSU │  │ RV32 MSU │  │ RV32 MSU │  │ RV32 MSU │ │
 │  └────┬─────┘  └────┬─────┘  └────┬─────┘  └────┬─────┘ │
 │       │              │              │              │      │
 │  ┌────┴──────────────┴──────────────┴──────────────┴──┐  │
@@ -42,7 +42,7 @@
 | `0x0001_0000` | 672KB | SYSTEM SRAM（核间共享） |
 | `0x3000_0000` | 256KB | PLIC |
 | `0x3004_0000` | 64KB | CLINT |
-| `0x3005_8000` | 4KB | UART（当前 16550，规划替换 sifive uart） |
+| `0x3005_8000` | 4KB | UART（sifive uart） |
 | `0xC000_0000` | 1GB | DDR3（复位向量） |
 
 ### 外设扩展规划（待实施，对应 IP 替换方案）
@@ -78,34 +78,34 @@
 # 清理输出目录
 rm -rf out/qemu && mkdir -p out/qemu
 
-# 配置（仅 riscv64）
+# 配置（仅 riscv32）
 cd out/qemu
-../../qemu/configure --target-list=riscv64-softmmu --disable-werror
+../../qemu/configure --target-list=riscv32-softmmu --disable-werror
 
 # 编译
-ninja qemu-system-riscv64
+ninja qemu-system-riscv32
 ```
 
-产物：`out/qemu/qemu-system-riscv64`
+产物：`out/qemu/qemu-system-riscv32`
 
 ## 使用
 
 ### 裸机程序
 
 ```bash
-# 编译裸机程序（复位向量 0xC000_0000，RV64 裸机）
-riscv64-unknown-elf-gcc -march=rv64imafdc -mabi=lp64d -mcmodel=medany \
+# 编译裸机程序（复位向量 0xC000_0000，RV32 裸机）
+riscv32-unknown-elf-gcc -march=rv32imafdc -mabi=ilp32d -mcmodel=medany \
     -T v2p.ld -nostdlib -o firmware.elf start.S main.c
 
-# 运行
-out/qemu/qemu-system-riscv64 -M v2p-ap -m 1G \
+# 运行（默认 1GB DDR，无需 -m）
+out/qemu/qemu-system-riscv32 -M v2p-ap \
     -bios firmware.elf -nographic
 ```
 
 ### OpenSBI + Linux（后续）
 
 ```bash
-out/qemu/qemu-system-riscv64 -M v2p-ap -m 1G \
+out/qemu/qemu-system-riscv32 -M v2p-ap \
     -bios fw_dynamic.bin \
     -kernel Image -append "console=ttyS0" \
     -nographic
@@ -114,7 +114,7 @@ out/qemu/qemu-system-riscv64 -M v2p-ap -m 1G \
 ### 查看支持的机器
 
 ```bash
-out/qemu/qemu-system-riscv64 -M help | grep v2p
+out/qemu/qemu-system-riscv32 -M help | grep v2p
 # 输出: v2p-ap   RISC-V V2P AP (Application Processor) machine
 ```
 
@@ -124,13 +124,13 @@ QEMU 启动 GDB server，监听 `localhost:1234`：
 
 ```bash
 # 终端1：启动 QEMU（-s 开启 GDB server，-S 暂停等待 GDB 连接）
-out/qemu/qemu-system-riscv64 -M v2p-ap -m 1G \
+out/qemu/qemu-system-riscv32 -M v2p-ap \
     -bios firmware.elf -nographic -s -S
 ```
 
 ```bash
 # 终端2：启动 GDB 并连接
-riscv64-unknown-elf-gdb firmware.elf \
+riscv32-unknown-elf-gdb firmware.elf \
     -ex "target extended-remote :1234"
 ```
 
@@ -141,10 +141,10 @@ V2P AP 为 4 核 SMP，GDB 连接后每个 hart 为一个线程：
 ```
 (gdb) info threads
   Id   Target Id                 Frame
-* 1    Thread 1 (RV64 hart 0)    _start () at start.S:5
-  2    Thread 2 (RV64 hart 1)    _park () at start.S:12
-  3    Thread 3 (RV64 hart 2)    _park () at start.S:12
-  4    Thread 4 (RV64 hart 3)    _park () at start.S:12
+* 1    Thread 1 (RV32 hart 0)    _start () at start.S:5
+  2    Thread 2 (RV32 hart 1)    _park () at start.S:12
+  3    Thread 3 (RV32 hart 2)    _park () at start.S:12
+  4    Thread 4 (RV32 hart 3)    _park () at start.S:12
 
 (gdb) thread 2                    # 切换到 hart1
 (gdb) set scheduler-locking on   # 单步仅当前 hart
