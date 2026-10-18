@@ -169,7 +169,7 @@ eFuse OTP 详见 [`fsi/fsi.md`](fsi/fsi.md)。
 
 | IP | 归属 | 说明 |
 |----|------|------|
-| VexRiscv-SMP ×4 | AP | SpinalHDL，RV32IMAFDC，Sv32 MMU，缓存一致性 |
+| VexRiscv-SMP ×4 | AP | SpinalHDL，RV32IMAFDC，Sv32 MMU，M/S/U 特权态，缓存一致性 |
 | Coral NPU | NPU | Google-Verisilicon，RV32IMF_Zve32x，标量+向量+矩阵 MAC；内置 WDT |
 | VexRiscv RV32 | FSI | SpinalHDL，RV32IM，安全核 |
 

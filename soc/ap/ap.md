@@ -11,10 +11,13 @@ AP 子系统是 V2P SoC 的高性能应用处理域，包含 4 核 VexRiscv-SMP 
 | IP | VexRiscv-SMP ×4（SpinalHDL）|
 | 架构 | RV32IMAFDC |
 | MMU | Sv32 页表方案 |
+| 特权态 | M + S + U（U 态随 S 态一并生成，供 Linux 用户态）|
 | 缓存 | 硬件维护缓存一致性（SMP 协同）|
 | 调试 | 内置 RISC-V Debug Spec v0.13 Plugin（halt/step/resume、寄存器/内存访问）|
 
 > 四核共享内存一致性域，通过 AXI 互联访问 DDR3 主存及所有公共外设。
+>
+> **U 态无独立中断上下文**：U 态陷入由 S 态处理（`scause` 区分陷入来源），PLIC 上下文仍为 4 核 × M/S。
 
 ## 内存布局
 
